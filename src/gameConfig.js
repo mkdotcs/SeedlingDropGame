@@ -19,7 +19,6 @@ export default {
     arcade: {
       //gravity: false
       debug: true,
-      debugShowBody: true,
       checkCollision: {
         up: false
       }

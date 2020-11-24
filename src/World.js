@@ -33,14 +33,24 @@ export default class World extends Phaser.Scene {
       .setDisplaySize(width, height)
       .setOrigin(0);
 
-    const target = this.physics.add.staticImage(width / 2, height + 5, 'grass');
     const targetScaledWidth = width * 0.2;
-    target.setSize(targetScaledWidth);
+    const target = this.physics.add.staticImage(width / 2, height, 'grass');
+    // target.setSize(targetScaledWidth);
+
+    setTimeout(() => {
+      target.setSize(target.width, target.height);
+    }, 1000);
+
     target.displayWidth = targetScaledWidth;
+    target.width = targetScaledWidth;
     target.scaleY = target.scaleX;
-    const targetHitArea = this.physics.add.image(target.x, target.y - 60);
-    // targetHitArea.setOrigin(0,0);
-    targetHitArea.body.setCircle(10);
+    // target.y += target.displayHeight * 0.2;
+    const targetHitArea = this.physics.add.image(target.x, target.y - 40);
+    targetHitArea.setOrigin(0,0);
+    targetHitArea.body.setCircle(target.displayWidth);
+    targetHitArea.x = target.getTopLeft().x - target.displayWidth * 0.5;
+    targetHitArea.y = target.getTopLeft().y + target.displayHeight * 0.05;
+    console.log(target.getTopLeft(), targetHitArea.y, height);
     targetHitArea.setDebugBodyColor(0xffff00);
     // const grass = this.matter.add.image(width / 2, height + 15, 'grass');
 

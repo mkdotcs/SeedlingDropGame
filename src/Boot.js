@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-// import images from './assets/*.png';
 
 export default class Boot extends Phaser.Scene {
   constructor () {
@@ -9,14 +8,6 @@ export default class Boot extends Phaser.Scene {
   preload () {
     var bg = this.add.rectangle(400, 300, 400, 30, 0x666666);
     var bar = this.add.rectangle(bg.x, bg.y, bg.width, bg.height, 0xffffff).setScale(0, 1);
-
-    // console.table(images);
-
-    // this.load.image('bg', images.bg);
-    // this.load.image('logo', images.logo);
-    // this.load.image('red', images.red);
-    // this.load.image('grass', images.grass);
-    // this.load.image('grass1', images.grass1);
 
     this.load.image('bg', 'images/bg.png');
     this.load.image('red', 'images/red.png');
@@ -37,8 +28,6 @@ export default class Boot extends Phaser.Scene {
   }
 
   update () {
-    // this.scene.start('menu');
     this.scene.start('world');
-    // this.scene.remove();
   }
 }
