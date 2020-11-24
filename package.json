@@ -1,6 +1,6 @@
 {
-  "name": "seedling-drop-v3",
-  "version": "1.0.0",
+  "name": "seedling-drop-game",
+  "version": "3.0.0",
   "description": "",
   "main": "src/index.html",
   "alias": {

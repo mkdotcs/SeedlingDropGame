@@ -12,8 +12,11 @@ export default class Boot extends Phaser.Scene {
     this.load.image('bg', 'images/bg.png');
     this.load.image('red', 'images/red.png');
     this.load.image('grass', 'images/grass.png');
+    this.load.image('target-left', 'images/target-left.png');
+    this.load.image('target-middle', 'images/target-middle.png');
+    this.load.image('target-right', 'images/target-right.png');
 
-    const test = [
+    [
       'https://static-cdn.jtvnw.net/emoticons/v1/303046121/2.0',
       'https://static-cdn.jtvnw.net/emoticons/v1/302039277/2.0',
       'https://static-cdn.jtvnw.net/emoticons/v1/301988022/2.0',

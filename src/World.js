@@ -21,7 +21,6 @@ export default class World extends Phaser.Scene {
       //   }
       // }
     });
-    this.group;
   }
 
   create () {
@@ -33,25 +32,82 @@ export default class World extends Phaser.Scene {
       .setDisplaySize(width, height)
       .setOrigin(0);
 
-    const targetScaledWidth = width * 0.2;
-    const target = this.physics.add.staticImage(width / 2, height, 'grass');
+    // const targetScaledWidth = width * 0.2;
+    // const zone = this.add.zone(width / 2, height / 2, width, height);
+    const targetMiddle = this.physics.add.image(0, 0, 'target-middle');
+    // targetMiddle.setSize(targetMiddle.displayWidth, targetMiddle.displayHeight);
+    // Phaser.Display.Align.In.BottomCenter(targetMiddle, zone);
+    // targetMiddle.setScale(0.5)
+    //   // .setOrigin(0)
+    // targetMiddle.setOrigin(0)
+    //   .setScale(0.5)
+    //   .setImmovable(true);
+
+    const targetLeft = this.physics.add.image(0, 0, 'target-left');
+    // Phaser.Display.Align.To.LeftCenter(targetLeft, targetMiddle);
+    // targetLeft.setScale(0.5)
+    //   // .setOrigin(0)
+    //   .setPosition(targetMiddle.getBounds().left - targetLeft.displayWidth / 2, targetMiddle.y)
+
+    // targetLeft.setOrigin(0)
+    //   .setScale(0.5)
+    //   .setImmovable(true);
+
+    const targetRight = this.physics.add.image(0, 0, 'target-right');
+    // targetRight.setScale(0.5)
+    //   // .setOrigin(0)
+    //   .setPosition(targetMiddle.getBounds().right + targetMiddle.displayWidth / 2, targetMiddle.y)
+    // targetRight.setOrigin(0)
+    //   .setScale(0.5)
+    //   .setImmovable(true);
+
+    // // Phaser.Display.Align.To.RightCenter(targetRight, targetMiddle);
+
+    const targetGroup = this.add.group([targetLeft, targetMiddle, targetRight]);
+    targetGroup.getChildren().forEach(child => {
+      child.setOrigin(0)
+        .setScale(0.5)
+        .setImmovable(true);
+    });
+    
+    Phaser.Actions.GridAlign(targetGroup.getChildren(), {
+      width: 3,
+      height: 0,
+      cellWidth: targetMiddle.displayWidth,
+      cellHeight: targetMiddle.displayHeight,
+      x: width / 2 - targetMiddle.displayWidth,
+      y: height - targetMiddle.displayHeight / 2
+    });
+
+    this.tweens.add({
+      targets: targetGroup.getChildren(),
+      y: '-=10',
+      duration: 1000,
+      ease: Phaser.Math.Easing.Sine.InOut,
+      repeat: -1,
+      yoyo: true
+    });
+
+    // targetGroup.config.setScale(1, 2);
+
+    // target.y = height - 50;
     // target.setSize(targetScaledWidth);
 
-    setTimeout(() => {
-      target.setSize(target.width, target.height);
-    }, 1000);
+    // setTimeout(() => {
+    //   target.setSize(target.width, target.height);
+    // }, 1000);
 
-    target.displayWidth = targetScaledWidth;
-    target.width = targetScaledWidth;
-    target.scaleY = target.scaleX;
+    // target.displayWidth = targetScaledWidth;
+    // target.width = targetScaledWidth;
+    // target.scaleY = target.scaleX;
     // target.y += target.displayHeight * 0.2;
-    const targetHitArea = this.physics.add.image(target.x, target.y - 40);
-    targetHitArea.setOrigin(0,0);
-    targetHitArea.body.setCircle(target.displayWidth);
-    targetHitArea.x = target.getTopLeft().x - target.displayWidth * 0.5;
-    targetHitArea.y = target.getTopLeft().y + target.displayHeight * 0.05;
-    console.log(target.getTopLeft(), targetHitArea.y, height);
-    targetHitArea.setDebugBodyColor(0xffff00);
+    // const targetHitArea = this.physics.add.image(target.x, target.y - 40);
+    // targetHitArea.setOrigin(0,0);
+    // targetHitArea.body.setCircle(target.displayWidth);
+    // targetHitArea.x = target.getTopLeft().x - target.displayWidth * 0.5;
+    // targetHitArea.y = target.getTopLeft().y + target.displayHeight * 0.05;
+    // console.log(target.getTopLeft(), targetHitArea.y, height);
+    // targetHitArea.setDebugBodyColor(0xffff00);
     // const grass = this.matter.add.image(width / 2, height + 15, 'grass');
 
 
@@ -60,7 +116,7 @@ export default class World extends Phaser.Scene {
     // const drops = [];
     // const trails = [];
 
-    this.group = this.add.group();
+    const dropGroup = this.add.group();
     window.group = this.group;
     // this.group1 = this.add.group();
     const testImages = this.textures.getTextureKeys().filter(name => name.startsWith('test'));
@@ -76,7 +132,7 @@ export default class World extends Phaser.Scene {
         // setTimeout(() => {
         //   console.log(drop.width, drop.body.width, drop.displayHeight, drop.body.displayHeight);
         // }, 2000);
-        this.group.add(drop);
+        dropGroup.add(drop);
         // const abc = this.physics.add.existing(drop1);
         // console.log('abc', abc);
         
@@ -116,9 +172,12 @@ export default class World extends Phaser.Scene {
       }
     });
 
-    this.physics.add.collider(this.group);
-    this.physics.add.overlap(targetHitArea, this.group, (target, drop) => {
-      drop.landed(true);
+    this.physics.add.collider(dropGroup);
+    this.physics.add.collider(targetGroup, dropGroup, (target, drop) => {
+      if (target.body.touching.up) {
+        console.log(target.body.touching);
+        drop.landed(true);
+      }
     });
   }
 
