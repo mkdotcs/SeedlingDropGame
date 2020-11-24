@@ -1,0 +1,45 @@
+{
+  "name": "seedling-drop-v3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.html",
+  "alias": {
+    "phaser": "./node_modules/phaser/src/phaser-arcade-physics.js"
+  },
+  "scripts": {
+    "start": "parcel src/index.html -p 8000",
+    "build": "parcel build src/index.html --out-dir dist",
+    "build-gh": "parcel build src/index.html --out-dir dist --public-url ./",
+    "clean": "rm -v dist/*",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "phaser",
+    "phaser3",
+    "phaser-boilerplate"
+  ],
+  "author": "Mohd. Ben Huwaireb (MrBenCoder) <huwaireb@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^3.24.1"
+  },
+  "devDependencies": {
+    "cssnano": "^4.1.10",
+    "eslint": "^5.16.0",
+    "eslint-config-semistandard": "^13.0.0",
+    "eslint-config-standard": "^12.0.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-promise": "^4.1.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "parcel-plugin-clean-easy": "^1.0.2",
+    "parcel-plugin-static-files-copy": "^2.4.3"
+  },
+  "parcelCleanPaths": [
+    "dist"
+  ],
+  "staticFiles": {
+    "staticPath": "public",
+    "watcherGlob": "**"
+  }
+}
