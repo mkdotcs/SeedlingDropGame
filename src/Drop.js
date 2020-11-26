@@ -4,7 +4,6 @@ export default class Drop extends Phaser.GameObjects.Sprite {
   constructor (scene, x, y, texture) {
     super(scene, x, y, texture);
 
-    this.setSize(this.width, this.height);
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -13,9 +12,10 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
       // .setVelocity(0, Phaser.Math.Between(70, 250))
       .setBounce(1)
-      .setCollideWorldBounds(true);
+      .setCollideWorldBounds(true)
+      .setAllowRotation();
     this.setDepth(1);
-        
+
     this.speed = 200;
     
     this.wobbleTween = scene.tweens.addCounter({
@@ -26,6 +26,7 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       yoyo: true,
       onUpdate: tween => {
         this.setAngle(tween.getValue());
+        this.body.angle = tween.getValue();
       }
     });
 

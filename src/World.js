@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import gameConfig from './gameConfig';
 import Drop from './Drop';
+import Target from './Target';
 
 export default class World extends Phaser.Scene {
   constructor () {
@@ -34,7 +35,7 @@ export default class World extends Phaser.Scene {
 
     // const targetScaledWidth = width * 0.2;
     // const zone = this.add.zone(width / 2, height / 2, width, height);
-    const targetMiddle = this.physics.add.image(0, 0, 'target-middle');
+    // const targetMiddle = this.physics.add.image(0, 0, 'target-middle');
     // targetMiddle.setSize(targetMiddle.displayWidth, targetMiddle.displayHeight);
     // Phaser.Display.Align.In.BottomCenter(targetMiddle, zone);
     // targetMiddle.setScale(0.5)
@@ -43,7 +44,7 @@ export default class World extends Phaser.Scene {
     //   .setScale(0.5)
     //   .setImmovable(true);
 
-    const targetLeft = this.physics.add.image(0, 0, 'target-left');
+    // const targetLeft = this.physics.add.image(0, 0, 'target-left');
     // Phaser.Display.Align.To.LeftCenter(targetLeft, targetMiddle);
     // targetLeft.setScale(0.5)
     //   // .setOrigin(0)
@@ -53,7 +54,7 @@ export default class World extends Phaser.Scene {
     //   .setScale(0.5)
     //   .setImmovable(true);
 
-    const targetRight = this.physics.add.image(0, 0, 'target-right');
+    // const targetRight = this.physics.add.image(0, 0, 'target-right');
     // targetRight.setScale(0.5)
     //   // .setOrigin(0)
     //   .setPosition(targetMiddle.getBounds().right + targetMiddle.displayWidth / 2, targetMiddle.y)
@@ -63,30 +64,29 @@ export default class World extends Phaser.Scene {
 
     // // Phaser.Display.Align.To.RightCenter(targetRight, targetMiddle);
 
-    const targetGroup = this.add.group([targetLeft, targetMiddle, targetRight]);
-    targetGroup.getChildren().forEach(child => {
-      child.setOrigin(0)
-        .setScale(0.5)
-        .setImmovable(true);
-    });
-    
-    Phaser.Actions.GridAlign(targetGroup.getChildren(), {
-      width: 3,
-      height: 0,
-      cellWidth: targetMiddle.displayWidth,
-      cellHeight: targetMiddle.displayHeight,
-      x: width / 2 - targetMiddle.displayWidth,
-      y: height - targetMiddle.displayHeight / 2
-    });
+    const target = new Target(this, 0, 0, 'target');
 
-    this.tweens.add({
-      targets: targetGroup.getChildren(),
-      y: '-=10',
-      duration: 1000,
-      ease: Phaser.Math.Easing.Sine.InOut,
-      repeat: -1,
-      yoyo: true
-    });
+    // this.add.image(800, target.y, 'leaf')
+    //   .setScale(0.3)
+    //   .setOrigin(1);
+  
+    // const targetGroup = this.add.group([targetLeft, targetMiddle, targetRight]);
+    // targetGroup.children.iterate(child => {
+    //   child.setOrigin(0)
+    //     .setScale(0.5)
+    //     .setImmovable(true);
+    // });
+    
+    // Phaser.Actions.GridAlign(targetGroup.getChildren(), {
+    //   width: 3,
+    //   height: 0,
+    //   cellWidth: targetMiddle.displayWidth,
+    //   cellHeight: targetMiddle.displayHeight,
+    //   x: width / 2 - targetMiddle.displayWidth,
+    //   y: height - targetMiddle.displayHeight / 2
+    // });
+
+   
 
     // targetGroup.config.setScale(1, 2);
 
@@ -115,6 +115,8 @@ export default class World extends Phaser.Scene {
 
     // const drops = [];
     // const trails = [];
+    window.target = target;
+    window.scene = this;
 
     const dropGroup = this.add.group();
     window.group = this.group;
@@ -173,11 +175,30 @@ export default class World extends Phaser.Scene {
     });
 
     this.physics.add.collider(dropGroup);
-    this.physics.add.collider(targetGroup, dropGroup, (target, drop) => {
+    this.physics.add.collider(target, dropGroup, (target, drop) => {
       if (target.body.touching.up) {
-        console.log(target.body.touching);
         drop.landed(true);
+
+        const { left: targetLeft, right: targetRight } = target.body.getBounds({});
+        const { left: dropLeft, right: dropRight } = drop.getBounds();
+        let dropX = drop.x;
+        if (drop.x < targetLeft) {
+          dropX = targetLeft + ((dropRight - targetLeft) / 2);
+        } else if (drop.x > targetRight) {
+          dropX = targetRight - ((targetRight - dropLeft) / 2);
+        }
+
+        target.addSeedling(dropX);
       }
+    // }
+    // , (target, drop) => {
+    //   console.log(target.getBounds().contains(drop.x, drop.y));
+    //   // console.log(target);
+    //   // console.log(drop);
+    //   // if (target.body.touching.up) {
+    //     return target.getBounds().contains(drop.x, drop.y);
+    //   // }
+    //   // return false;
     });
   }
 

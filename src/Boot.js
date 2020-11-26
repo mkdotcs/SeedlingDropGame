@@ -9,12 +9,13 @@ export default class Boot extends Phaser.Scene {
     var bg = this.add.rectangle(400, 300, 400, 30, 0x666666);
     var bar = this.add.rectangle(bg.x, bg.y, bg.width, bg.height, 0xffffff).setScale(0, 1);
 
+    this.load.crossOrigin = 'anonymous';
+
     this.load.image('bg', 'images/bg.png');
     this.load.image('red', 'images/red.png');
     this.load.image('grass', 'images/grass.png');
-    this.load.image('target-left', 'images/target-left.png');
-    this.load.image('target-middle', 'images/target-middle.png');
-    this.load.image('target-right', 'images/target-right.png');
+    this.load.image('target', 'images/target.png');
+    this.load.image('leaf', 'images/leaf.png');
 
     [
       'https://static-cdn.jtvnw.net/emoticons/v1/303046121/2.0',

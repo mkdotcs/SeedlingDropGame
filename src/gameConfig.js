@@ -14,6 +14,7 @@ export default {
   },
   // banner: { text: 'white', background: ['#FD7400', '#FFE11A', '#BEDB39', '#1F8A70', '#004358'] },
   scene: [Boot, World],
+  transparent: true,
   physics: {
     default: 'arcade',
     arcade: {
