@@ -4,7 +4,7 @@ import Drop from './Drop';
 import Target from './Target';
 
 export default class World extends Phaser.Scene {
-  constructor () {
+  constructor() {
     super({
       key: 'world'
       // physics: {
@@ -22,16 +22,19 @@ export default class World extends Phaser.Scene {
       //   }
       // }
     });
+
+    this.dropGroup;
   }
 
-  create () {
+  create() {
     const { width, height } = this.scale;
     // const width = window.innerWidth; // gameConfig.width;
     // const height = window.innerHeight; // gameConfig.height;
     // this.cameras.resize(width, height);
     this.add.image(0, 0, 'bg')
       .setDisplaySize(width, height)
-      .setOrigin(0);
+      .setOrigin(0)
+      .setDepth(-2);
 
     // const targetScaledWidth = width * 0.2;
     // const zone = this.add.zone(width / 2, height / 2, width, height);
@@ -118,77 +121,98 @@ export default class World extends Phaser.Scene {
     window.target = target;
     window.scene = this;
 
-    const dropGroup = this.add.group();
+    this.dropGroup = this.add.group();
     window.group = this.group;
     // this.group1 = this.add.group();
-    const testImages = this.textures.getTextureKeys().filter(name => name.startsWith('test'));
+    // const testImages = this.textures.getTextureKeys().filter(name => name.startsWith('test'));
     
     // const test = this.physics.add.image(0, 0, 'logo');
     // test.setPosition(test.width / 2 + Math.floor(Math.random() * Math.floor(width)), -100);
 
-    for (let i = 0; i < 1; i++) {
-      testImages.forEach(imageName => {
-        const drop = new Drop(this, Phaser.Math.Between(0, width), -100, imageName);
-        // drop.body.setSize(10,10);
-        // drop.body.setOffset(10,10);
-        // setTimeout(() => {
-        //   console.log(drop.width, drop.body.width, drop.displayHeight, drop.body.displayHeight);
-        // }, 2000);
-        dropGroup.add(drop);
-        // const abc = this.physics.add.existing(drop1);
-        // console.log('abc', abc);
+    // for (let i = 0; i < 1; i++) {
+    //   testImages.forEach(imageName => {
+    //     const drop = new Drop(this, Phaser.Math.Between(0, width), -100, imageName);
+    //     // drop.body.setSize(10,10);
+    //     // drop.body.setOffset(10,10);
+    //     // setTimeout(() => {
+    //     //   console.log(drop.width, drop.body.width, drop.displayHeight, drop.body.displayHeight);
+    //     // }, 2000);
+    //     dropGroup.add(drop);
+    //     // const abc = this.physics.add.existing(drop1);
+    //     // console.log('abc', abc);
         
-        // const drop = this.physics.add.image(Phaser.Math.Between(0, width), -100, drop1.texture)
-        //   .setVelocity(Phaser.Math.Between(-100, 150), Phaser.Math.Between(70, 250))
-        //   .setBounce(1)
-        //   .setCollideWorldBounds(true)
-        //   .setDepth(1)
-          // // .setDisplaySize(50, 50);
+    //     // const drop = this.physics.add.image(Phaser.Math.Between(0, width), -100, drop1.texture)
+    //     //   .setVelocity(Phaser.Math.Between(-100, 150), Phaser.Math.Between(70, 250))
+    //     //   .setBounce(1)
+    //     //   .setCollideWorldBounds(true)
+    //     //   .setDepth(1)
+    //       // // .setDisplaySize(50, 50);
   
-        // drops.push(drop);
+    //     // drops.push(drop);
 
-      //   this.add.particles(imageName, null, {
-      //     speed: 50,
-      //     // scale: { start: 0.5, end: 0.1 },
-      //     alpha: { start: 0.1, end: 0 },
-      //     // blendMode: 'ADD',
-      //     follow: drop
-      // });
+    //   //   this.add.particles(imageName, null, {
+    //   //     speed: 50,
+    //   //     // scale: { start: 0.5, end: 0.1 },
+    //   //     alpha: { start: 0.1, end: 0 },
+    //   //     // blendMode: 'ADD',
+    //   //     follow: drop
+    //   // });
   
-        // const emitter = particles.createEmitter({
-        //   speed: 50,
-        //   // lifespan: 1000,
-        //   scale: { start: 0.5, end: 0.1 },
-        //   alpha: { start: 1, end: 0 },
-        //   blendMode: 'ADD',
-        //   follow: drop
-        // });
+    //     // const emitter = particles.createEmitter({
+    //     //   speed: 50,
+    //     //   // lifespan: 1000,
+    //     //   scale: { start: 0.5, end: 0.1 },
+    //     //   alpha: { start: 1, end: 0 },
+    //     //   blendMode: 'ADD',
+    //     //   follow: drop
+    //     // });
   
-        // trails.push(emitter);
-      });
-    }
+    //     // trails.push(emitter);
+    //   });
+    // }
 
-    this.physics.world.on('worldbounds', (drop, up, down, left, right) => {
-      if (down) {
-        drop.gameObject.landed(false);
-      }
-    });
+    // this.physics.world.on('worldbounds', (drop, up, down, left, right) => {
+    //   if (down) {
+    //     drop.gameObject.landed(false);
+    //   }
+    // });
 
-    this.physics.add.collider(dropGroup);
-    this.physics.add.collider(target, dropGroup, (target, drop) => {
-      if (target.body.touching.up) {
-        drop.landed(true);
-
-        const { left: targetLeft, right: targetRight } = target.body.getBounds({});
-        const { left: dropLeft, right: dropRight } = drop.getBounds();
-        let dropX = drop.x;
-        if (drop.x < targetLeft) {
+    this.physics.add.collider(this.dropGroup);
+    this.physics.add.collider(target, this.dropGroup, (targetObj, dropObj) => {
+      if (targetObj.body.touching.up) {
+        const { x: targetLeft, right: targetRight } = targetObj.body.getBounds({});
+        const { left: dropLeft, right: dropRight } = dropObj.getBounds();
+        let dropX = dropObj.x;
+        if (dropObj.x < targetLeft) {
           dropX = targetLeft + ((dropRight - targetLeft) / 2);
-        } else if (drop.x > targetRight) {
+        } else if (dropObj.x > targetRight) {
           dropX = targetRight - ((targetRight - dropLeft) / 2);
         }
+        
+        dropObj.landed(true, dropX);
+        this.tweens.add({
+          targets: dropObj,
+          alpha: { from: 1, to: 0 },
+          y: '+=30',
+          x: dropX,
+          scaleX: 0,
+          scaleY: 0,
+          ease: Phaser.Math.Easing.Expo.InOut,
+          duration: 500,
+          repeat: 0,
+          yoyo: false,
+          onComplete: () => {
+            targetObj.addSeedling(dropX);
+          },
+        });
 
-        target.addSeedling(dropX);
+
+        /* for testing only */
+        // this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+        // this.input.keyboard.on('keyup-SPACE', function (event) {
+        //   console.log('Hello from the SPACE Key!');
+        // });
       }
     // }
     // , (target, drop) => {
@@ -200,9 +224,26 @@ export default class World extends Phaser.Scene {
     //   // }
     //   // return false;
     });
+
+    this.input.keyboard.on('keyup', (event) => {
+      switch (event.keyCode) {
+        case Phaser.Input.Keyboard.KeyCodes.SPACE:
+          this.createRandomDrop();
+          break;
+      }
+    });
   }
 
-  update () {
-    // console.dir(this.group.getChildren().length);
+  createRandomDrop() {
+    const testImages = this.textures.getTextureKeys().filter((name) => name.startsWith('test'));
+    const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
+    const drop = new Drop(this, Phaser.Math.Between(0, this.scale.width), -100, imageName);
+    this.dropGroup.add(drop);
+  }
+
+  update() {
+    // if (this.keySpace?.isDown) {
+    //   console.log('spacebar');
+    // }
   }
 }

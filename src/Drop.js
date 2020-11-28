@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 export default class Drop extends Phaser.GameObjects.Sprite {
-  constructor (scene, x, y, texture) {
+  constructor(scene, x, y, texture) {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
@@ -23,47 +23,42 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       to: Phaser.Math.Between(20, 30),
       duration: 800,
       repeat: -1,
+      ease: Phaser.Math.Easing.Sine.InOut,
       yoyo: true,
-      onUpdate: tween => {
+      onUpdate: (tween) => {
         this.setAngle(tween.getValue());
-        this.body.angle = tween.getValue();
-      }
+      },
     });
 
     this.trail = scene.add.particles('red').createEmitter({
       speed: 50,
       lifespan: {
-        onEmit: (particle, key, t, value) => {
-          return Phaser.Math.Percent(this.body.speed, 0, 300) * 1000;
-        }
+        onEmit: (particle, key, t, value) => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
       },
       alpha: {
-        onEmit: (particle, key, t, value) => {
-          return Phaser.Math.Percent(this.body.speed, 0, 300);
-        }
+        onEmit: (particle, key, t, value) => Phaser.Math.Percent(this.body.speed, 0, 300),
       },
       scale: { start: 0.6, end: 0 },
       blendMode: 'ADD',
-      follow: this
+      follow: this,
     });
   }
 
-  preUpdate (time, delta) {
+  preUpdate(time, delta) {
     super.preUpdate(time, delta);
+    if (this.y + this.displayHeight / 2 > this.scene.scale.height) {
+      this.landed(false);
+    }
   }
 
-  landed (onTarget) {
+  landed(onTarget) {
     this.wobbleTween.stop();
     this.body.setVelocity(0);
     this.body.enable = false;
     this.trail.stop();
     this.setAngle(0);
 
-    return;
-
-    if (onTarget) {
-
-    } else {
+    if (!onTarget) {
       this.scene.tweens.add({
         targets: this,
         alpha: { from: 1, to: 0 },
@@ -72,13 +67,13 @@ export default class Drop extends Phaser.GameObjects.Sprite {
         scaleY: 0,
         angle: -360,
         ease: 'Power2',
-        delay: 1000, //config.dropTimeout
+        delay: 10000, //config.dropTimeout
         duration: 5000,
         repeat: 0,
         yoyo: false,
         onComplete: () => {
           this.destroy();
-        }
+        },
       });
     }
   }
