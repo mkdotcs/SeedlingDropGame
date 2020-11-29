@@ -1,12 +1,11 @@
 import Phaser from 'phaser';
-import gameConfig from './gameConfig';
 import Drop from './Drop';
 import Target from './Target';
 
 export default class World extends Phaser.Scene {
   constructor() {
     super({
-      key: 'world'
+      key: 'world',
       // physics: {
       //   arcade: {
       //     debug: true,
@@ -24,6 +23,7 @@ export default class World extends Phaser.Scene {
     });
 
     this.dropGroup;
+    this.target;
   }
 
   create() {
@@ -31,6 +31,7 @@ export default class World extends Phaser.Scene {
     // const width = window.innerWidth; // gameConfig.width;
     // const height = window.innerHeight; // gameConfig.height;
     // this.cameras.resize(width, height);
+
     this.add.image(0, 0, 'bg')
       .setDisplaySize(width, height)
       .setOrigin(0)
@@ -67,7 +68,7 @@ export default class World extends Phaser.Scene {
 
     // // Phaser.Display.Align.To.RightCenter(targetRight, targetMiddle);
 
-    const target = new Target(this, 0, 0, 'target');
+    this.target = new Target(this, 0, 0, 'target');
 
     // this.add.image(800, target.y, 'leaf')
     //   .setScale(0.3)
@@ -88,8 +89,6 @@ export default class World extends Phaser.Scene {
     //   x: width / 2 - targetMiddle.displayWidth,
     //   y: height - targetMiddle.displayHeight / 2
     // });
-
-   
 
     // targetGroup.config.setScale(1, 2);
 
@@ -113,13 +112,15 @@ export default class World extends Phaser.Scene {
     // targetHitArea.setDebugBodyColor(0xffff00);
     // const grass = this.matter.add.image(width / 2, height + 15, 'grass');
 
-
     // const particles = this.add.particles('red');
 
     // const drops = [];
     // const trails = [];
-    window.target = target;
+    
+    //* ********************
+    window.target = this.target;
     window.scene = this;
+    //* ********************
 
     this.dropGroup = this.add.group();
     window.group = this.group;
@@ -178,34 +179,20 @@ export default class World extends Phaser.Scene {
     // });
 
     this.physics.add.collider(this.dropGroup);
-    this.physics.add.collider(target, this.dropGroup, (targetObj, dropObj) => {
-      if (targetObj.body.touching.up) {
-        const { x: targetLeft, right: targetRight } = targetObj.body.getBounds({});
-        const { left: dropLeft, right: dropRight } = dropObj.getBounds();
-        let dropX = dropObj.x;
-        if (dropObj.x < targetLeft) {
+    this.physics.add.collider(this.target, this.dropGroup, (target, drop) => {
+      if (target.body.touching.up) {
+        const { x: targetLeft, right: targetRight } = target.body.getBounds({});
+        const { left: dropLeft, right: dropRight } = drop.getBounds();
+        let dropX = drop.x;
+
+        if (drop.x < targetLeft) {
           dropX = targetLeft + ((dropRight - targetLeft) / 2);
-        } else if (dropObj.x > targetRight) {
+        } else if (drop.x > targetRight) {
           dropX = targetRight - ((targetRight - dropLeft) / 2);
         }
-        
-        dropObj.landed(true, dropX);
-        this.tweens.add({
-          targets: dropObj,
-          alpha: { from: 1, to: 0 },
-          y: '+=30',
-          x: dropX,
-          scaleX: 0,
-          scaleY: 0,
-          ease: Phaser.Math.Easing.Expo.InOut,
-          duration: 500,
-          repeat: 0,
-          yoyo: false,
-          onComplete: () => {
-            targetObj.addSeedling(dropX);
-          },
-        });
+        const seedlingX = dropX - target.x;
 
+        drop.landed(true, dropX, () => target.addSeedling(seedlingX));
 
         /* for testing only */
         // this.keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -230,6 +217,14 @@ export default class World extends Phaser.Scene {
         case Phaser.Input.Keyboard.KeyCodes.SPACE:
           this.createRandomDrop();
           break;
+        case Phaser.Input.Keyboard.KeyCodes.M:
+          this.target.move(this.target.moveTimer.paused);
+          break;
+        case Phaser.Input.Keyboard.KeyCodes.F:
+          this.target.float(this.target.floatTween.isPaused());
+          break;
+        default:
+          break;
       }
     });
   }
@@ -239,11 +234,5 @@ export default class World extends Phaser.Scene {
     const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
     const drop = new Drop(this, Phaser.Math.Between(0, this.scale.width), -100, imageName);
     this.dropGroup.add(drop);
-  }
-
-  update() {
-    // if (this.keySpace?.isDown) {
-    //   console.log('spacebar');
-    // }
   }
 }

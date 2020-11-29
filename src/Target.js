@@ -11,18 +11,16 @@ export default class Target extends Phaser.GameObjects.Image {
     this.body.setImmovable(true)
       .setCollideWorldBounds(true);
 
-    const { width: sceneWidth, height: sceneHeight } = scene.scale;
-    const scale = (sceneWidth * 0.2) / this.width;
+    const scale = (scene.scale.width * 0.2) / this.width;
 
-    this.setScale(scale)
-      .setPosition(sceneWidth / 2, sceneHeight - this.displayHeight / 4);
-    
+    this.setScale(scale);
     this.body.setSize(this.width - 80 * scale, this.height)
       .setOffset(40 * scale, 30 * scale);
 
-    const { x: targetX, y: targetY } = this.getTopCenter();
-    this.container = scene.add.container(targetX, targetY + 5)
+    this.container = scene.add.container(0, 0 + 5)
       .setDepth(-1);
+
+    this.centerTarget();
 
     this.floatTween = scene.tweens.add({
       targets: [this, this.container],
@@ -34,7 +32,7 @@ export default class Target extends Phaser.GameObjects.Image {
     });
 
     this.moveTimer = scene.time.addEvent({
-      delay: 5000,
+      delay: 10000,
       callback: this.move,
       callbackScope: this,
       loop: true,
@@ -42,60 +40,56 @@ export default class Target extends Phaser.GameObjects.Image {
     });
   }
 
-  addSeedling(dropX) {
+  centerTarget(centerYOnly) {
+    const { width: sceneWidth, height: sceneHeight } = this.scene.scale;
+    this.setPosition(centerYOnly ? this.x : sceneWidth / 2, sceneHeight - this.displayHeight / 4);
+
+    const { x: targetX, y: targetY } = this.getTopCenter();
+    this.container.setPosition(targetX, targetY);
+  }
+
+  addSeedling(x) {
     // const graphics = this.scene.add.graphics({ lineStyle: {width: 1, color: 0xff0000 } });
     // const line = new Phaser.Geom.Line(dropX, this.getBounds().top, dropX, this.getBounds().top - 300);
     // graphics.strokeLineShape(line);
 
     const username = this.createRandomUsername();
 
-    const score = (1 - Math.abs(dropX - this.x) / (this.displayWidth / 2)) * 100;
-    const seedling = new Seedling(this.scene, dropX - this.x, 0, score, username);
+    const score = (1 - Math.abs(x) / (this.displayWidth / 2)) * 100;
+    const seedling = new Seedling(this.scene, x, 0, score, username);
     this.container.add(seedling);
   }
 
-  startMove() {
-    this.move();
-    this.moveTimer.paused = false;
+  clear() {
+    this.container.removeAll(true);
   }
 
-  stopMove() {
-    this.moveTimer.paused = true;
-    this.setPosition(this.scene.scale.width / 2, this.scene.scale.height - this.displayHeight / 4);
+  float(isStart = true) {
+    if (isStart) {
+      this.floatTween.resume();
+    } else {
+      this.floatTween.pause();
+      this.centerTarget(true);
+    }
   }
 
-  startFloat() {
-    this.floatTween.start();
-  }
+  move(isStart = true) {
+    if (isStart) {
+      const rnd = Phaser.Math.RND;
+      const newX = rnd.between(this.displayWidth + 5,
+        this.scene.scale.width - this.displayWidth - 5);
 
-  stopFloat() {
-    this.floatTween.stop();
-    this.setPosition(this.scene.scale.width / 2, this.scene.scale.height - this.displayHeight / 4);
-  }
-
-  move() {
-    // const halfWidth = this.displayWidth / 2;
-    // const leftX1 = halfWidth + 5;
-    // const leftX2 = this.x - halfWidth;
-    // const rightX1 = this.x + halfWidth;
-    // const rightX2 = this.scene.scale.width - this.displayWidth - 5;
-
-    const rnd = Phaser.Math.RND;
-    // let isLeft = rnd.frac() < 0.5;
-
-    // isLeft = (isLeft && leftX1 < leftX2) || (!isLeft && rightX1 > rightX2);
-
-    // const startX = isLeft ? leftX1 : rightX1;
-    // const endX = isLeft ? leftX2 : rightX2;
-    // const newX = Phaser.Math.Between(this.displayWidth + 5,
-    const newX = rnd.between(this.displayWidth + 5, this.scene.scale.width - this.displayWidth - 5);
-
-    this.scene.tweens.add({
-      targets: [this, this.container],
-      x: newX,
-      duration: 1000,
-      ease: Phaser.Math.Easing.Sine.InOut,
-    });
+      this.scene.tweens.add({
+        targets: [this, this.container],
+        x: newX,
+        duration: 1000,
+        ease: Phaser.Math.Easing.Sine.InOut,
+      });
+      this.moveTimer.paused = false;
+    } else {
+      this.moveTimer.paused = true;
+      this.centerTarget();
+    }
   }
 
   // for testing purpose only

@@ -27,19 +27,20 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       yoyo: true,
       onUpdate: (tween) => {
         this.setAngle(tween.getValue());
+        // this.setAngle(Math.sin(this.y / 20) * 10);
       },
     });
 
     this.trail = scene.add.particles('red').createEmitter({
       speed: 50,
       lifespan: {
-        onEmit: (particle, key, t, value) => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
+        onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
       },
       alpha: {
-        onEmit: (particle, key, t, value) => Phaser.Math.Percent(this.body.speed, 0, 300),
+        onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
       },
       scale: { start: 0.6, end: 0 },
-      blendMode: 'ADD',
+      blendMode: 'SCREEN',
       follow: this,
     });
   }
@@ -51,14 +52,31 @@ export default class Drop extends Phaser.GameObjects.Sprite {
     }
   }
 
-  landed(onTarget) {
+  landed(onTarget, dropX, callback) {
     this.wobbleTween.stop();
     this.body.setVelocity(0);
     this.body.enable = false;
     this.trail.stop();
     this.setAngle(0);
 
-    if (!onTarget) {
+    if (onTarget) {
+      this.scene.tweens.add({
+        targets: this,
+        alpha: { from: 1, to: 0 },
+        y: '+=30',
+        x: dropX,
+        scaleX: 0,
+        scaleY: 0,
+        ease: Phaser.Math.Easing.Expo.InOut,
+        duration: 500,
+        repeat: 0,
+        yoyo: false,
+        onComplete: () => {
+          callback();
+          this.destroy();
+        },
+      });
+    } else {
       this.scene.tweens.add({
         targets: this,
         alpha: { from: 1, to: 0 },
@@ -66,14 +84,12 @@ export default class Drop extends Phaser.GameObjects.Sprite {
         scaleX: 0,
         scaleY: 0,
         angle: -360,
-        ease: 'Power2',
-        delay: 10000, //config.dropTimeout
+        ease: Phaser.Math.Easing.Cubic.Out,
+        delay: 1000, // config.dropTimeout
         duration: 5000,
         repeat: 0,
         yoyo: false,
-        onComplete: () => {
-          this.destroy();
-        },
+        onComplete: () => this.destroy(),
       });
     }
   }
