@@ -17,7 +17,7 @@ export default class Drop extends Phaser.GameObjects.Sprite {
     this.setDepth(1);
 
     this.speed = 200;
-    
+
     this.wobbleTween = scene.tweens.addCounter({
       from: Phaser.Math.Between(-20, -30),
       to: Phaser.Math.Between(20, 30),
@@ -31,7 +31,8 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       },
     });
 
-    this.trail = scene.add.particles('red').createEmitter({
+    this.trail = scene.add.particles('flares').createEmitter({
+      frame: ['red', 'blue', 'green', 'yellow'],
       speed: 50,
       lifespan: {
         onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
@@ -52,11 +53,42 @@ export default class Drop extends Phaser.GameObjects.Sprite {
     }
   }
 
-  landed(onTarget, dropX, callback) {
+  explode() {
+    this.visible = false;
+    const emitter = this.scene.add.particles('flares').createEmitter({
+      frame: 'red',
+      x: this.x,
+      y: this.y,
+      speed: { min: -800, max: 800 },
+      angle: { min: 0, max: 360 },
+      scale: { start: 0.3, end: 0 },
+      alpha: { start: 1, end: 0 },
+      blendMode: 'SCREEN',
+      lifespan: 200,
+      gravityY: 100,
+      quantity: 40,
+      on: false,
+    });
+    emitter.explode();
+    emitter.onParticleDeath((particle) => {
+      if (emitter.dead.length === emitter.quantity.propertyValue) {
+        this.cleanUp();
+        this.destroy();
+      }
+    });
+  }
+
+  cleanUp() {
     this.wobbleTween.stop();
-    this.body.setVelocity(0);
-    this.body.enable = false;
     this.trail.stop();
+    if (this.body) {
+      this.body.enable = false;
+      this.body.setVelocity(0);
+    }
+  }
+
+  landed(onTarget, dropX, callback) {
+    this.cleanUp();
     this.setAngle(0);
 
     if (onTarget) {

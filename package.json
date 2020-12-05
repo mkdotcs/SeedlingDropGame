@@ -21,6 +21,7 @@
   "author": "Mohd. Ben Huwaireb (MrBenCoder) <huwaireb@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "matter": "^0.2.0",
     "phaser": "^3.24.1",
     "webfontloader": "^1.6.28"
   },
@@ -38,5 +39,12 @@
   "staticFiles": {
     "staticPath": "public",
     "watcherGlob": "**"
-  }
+  },
+  "browserslist": [
+    "last 3 and_chr versions",
+    "last 3 chrome versions",
+    "last 3 opera versions",
+    "last 3 ios_saf versions",
+    "last 3 safari versions"
+  ]
 }

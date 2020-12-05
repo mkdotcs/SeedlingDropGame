@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import WebFontFile from './WebFontFile';
+import WebFontFile from './utils/WebFontFile';
 
 export default class Boot extends Phaser.Scene {
   constructor() {
@@ -8,21 +8,30 @@ export default class Boot extends Phaser.Scene {
   }
 
   preload() {
-    const bg = this.add.rectangle(400, 300, 400, 30, 0x666666);
+    /* Loading indicator */
+    const { width, height } = this.scale;
+    const bg = this.add.rectangle(width / 2, height / 2 + 80, 950, 10, 0x666666);
     const bar = this.add.rectangle(bg.x, bg.y, bg.width, bg.height, 0xffffff).setScale(0, 1);
+    const loadingText = this.add.text(width / 2, height / 2, 'Loading...(0%)', {
+      fontSize: '100px',
+      align: 'center',
+    })
+      .setOrigin(0.5);
+
+    /* Loading assets */
+    this.load.atlas('flares', 'assets/flares.png', 'assets/flares.json');
+    this.load.image('bg', 'assets/bg.png');
+
+    this.load.svg('target', 'assets/target.svg');
+    this.load.svg('seedling', 'assets/seedling.svg', { scale: 0.5 });
+    this.load.svg('tree', 'assets/tree.svg');
+    this.load.svg('board', 'assets/board.svg');
+
+    this.load.addFile(new WebFontFile(this.load, 'Press Start 2P'));
 
     this.load.crossOrigin = 'anonymous';
     this.load.setCORS('anonymous');
     this.load.setCORS('Anonymous');
-    this.load.setCORS(true);
-
-    this.load.image('bg', 'images/bg.png');
-    this.load.image('red', 'images/red.png');
-    this.load.image('target', 'images/target.png');
-    this.load.image('seedling', 'images/seedling.png');
-    this.load.image('tree', 'images/tree.png');
-
-    this.load.addFile(new WebFontFile(this.load, 'Press Start 2P'));
 
     [
       'https://static-cdn.jtvnw.net/emoticons/v1/303046121/2.0',
@@ -35,6 +44,9 @@ export default class Boot extends Phaser.Scene {
 
     this.load.on('progress', (progress) => {
       bar.setScale(progress, 1);
+
+      const p = progress * 100;
+      loadingText.setText(`Loading...(${p.toFixed(0)}%)`);
     });
   }
 

@@ -3,11 +3,11 @@ import Phaser from 'phaser';
 export default class Seedling extends Phaser.GameObjects.Image {
   constructor(scene, x, y, score, username) {
     let textureName = 'seedling';
-    let height = score * 1;
+    let height = score * 0.9;
 
     if (score > 90) {
       textureName = 'tree';
-      height = score * 1.5;
+      height = score * 1.1;
     }
 
     super(scene, x, y, textureName);
@@ -17,18 +17,17 @@ export default class Seedling extends Phaser.GameObjects.Image {
     this.displayHeight = 0;
     this.scaleX = this.scaleY;
     this.setOrigin(0.5, 1);
-    this.smoothed = true;
-    this.antialiasing = true;
 
     this.displayUsername = scene.add.text(this.x, y, username,{
       fontFamily: '"Press Start 2P"',
-      fontSize: 16 * ((score / 100) * 1.5),
+      fontSize: 16 * ((score / 100) * 1.1),
       color: '#ffffff',
     })
       .setOrigin(0.5)
       .setStroke('#de77ae', 16)
       .setShadow(2, 2, '#333333', 2, true, false);
 
+    /* show seedling */
     scene.tweens.addCounter({
       from: 0,
       to: height,
@@ -46,16 +45,22 @@ export default class Seedling extends Phaser.GameObjects.Image {
       },
     });
 
-    scene.tweens.add({
-      targets: this.displayUsername,
-      alpha: { from: 1, to: 0 },
-      scaleX: 0,
-      scaleY: 0,
+    /* hide username only after 1 sec. */
+    scene.time.addEvent({
       delay: 1000,
-      ease: Phaser.Math.Easing.Expo.InOut,
-      duration: 50000,
-      repeat: 0,
-      yoyo: false,
+      callback: () => {
+        scene.tweens.add({
+          targets: this.displayUsername,
+          alpha: { from: 1, to: 0 },
+          scaleX: 0,
+          scaleY: 0,
+          delay: 0,
+          ease: Phaser.Math.Easing.Expo.InOut,
+          duration: 50000,
+          repeat: 0,
+          yoyo: false,
+        });
+      },
     });
   }
 }

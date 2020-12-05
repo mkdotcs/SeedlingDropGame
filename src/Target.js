@@ -1,9 +1,27 @@
 import Phaser from 'phaser';
 import Seedling from './Seedling';
 
+export const TargetShowStatus = {
+  hide: 0,
+  show: 1,
+  auto: 2,
+};
+
 export default class Target extends Phaser.GameObjects.Image {
   constructor(scene, x, y, texture) {
-    super(scene, x, y, texture);
+    super(scene, x, y, 'target');
+
+    this.status = {
+      currentMoving: false,
+      currentFloating: true,
+      lastMoving: false,
+      lastFloating: true,
+      showStatus: TargetShowStatus.show,
+      saveCurrentValues() {
+        this.lastMoving = this.currentMoving;
+        this.lastFloating = this.currentFloating;
+      },
+    };
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -11,52 +29,112 @@ export default class Target extends Phaser.GameObjects.Image {
     this.body.setImmovable(true)
       .setCollideWorldBounds(true);
 
-    const scale = (scene.scale.width * 0.2) / this.width;
+    this.displayWidth = scene.scale.width * 0.2;
+    this.scaleY = this.scaleX;
+    this.body.setSize(
+      this.body.width - this.body.width * 0.1,
+      this.body.height - this.body.height * 0.2,
+      true,
+    );
 
-    this.setScale(scale);
-    this.body.setSize(this.width - 80 * scale, this.height)
-      .setOffset(40 * scale, 30 * scale);
-
+    /** @type {Phaser.GameObjects.Container} container */
     this.container = scene.add.container(0, 0 + 5)
       .setDepth(-1);
 
-    this.centerTarget();
-
-    this.floatTween = scene.tweens.add({
-      targets: [this, this.container],
-      y: '-=10',
-      duration: 1000,
-      ease: Phaser.Math.Easing.Sine.InOut,
-      repeat: -1,
-      yoyo: true,
-    });
-
-    this.moveTimer = scene.time.addEvent({
-      delay: 10000,
-      callback: this.move,
-      callbackScope: this,
-      loop: true,
+    this.autoTimer = this.scene.time.addEvent({
+      delay: 2000,
       paused: true,
+      loop: true,
+      callback: () => {
+        this.status.saveCurrentValues();
+        this.move(false);
+        this.float(false);
+        this.updateYPos(this.scene.scale.height + 300);
+        this.autoTimer.paused = true;
+      },
+    });
+
+    this.y = scene.scale.height + this.displayHeight;
+    this.center('x');
+    this.updateShowStatus(TargetShowStatus.show);
+  }
+
+  updateShowStatus(status) {
+    this.autoTimer.paused = true;
+
+    switch (status) {
+      case TargetShowStatus.hide:
+        if (this.status.showStatus === TargetShowStatus.show) {
+          this.status.saveCurrentValues();
+        }
+        this.move(false);
+        this.float(false);
+        this.updateYPos(this.scene.scale.height + 300);
+        break;
+
+      case TargetShowStatus.show:
+        this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
+          () => {
+            if (this.status.lastMoving) {
+              this.move();
+            }
+            if (this.status.lastFloating) {
+              this.float();
+            }
+          });
+        break;
+      default:
+        this.autoTimer.paused = false;
+        break;
+    }
+    this.status.showStatus = status;
+  }
+
+  updateYPos(y, callback) {
+    this.scene.tweens.add({
+      targets: [this, this.container],
+      y,
+      duration: 500,
+      onComplete: () => {
+        if (callback) {
+          callback();
+        }
+      },
     });
   }
 
-  centerTarget(centerYOnly) {
+  center(dir, animate) {
     const { width: sceneWidth, height: sceneHeight } = this.scene.scale;
-    this.setPosition(centerYOnly ? this.x : sceneWidth / 2, sceneHeight - this.displayHeight / 4);
+    let x = sceneWidth / 2;
+    let y = sceneHeight - this.displayHeight / 4;
+    if (dir) {
+      x = dir === 'y' ? this.x : x;
+      y = dir === 'x' ? this.y : y;
+    }
 
-    const { x: targetX, y: targetY } = this.getTopCenter();
-    this.container.setPosition(targetX, targetY);
+    this.scene.tweens.add({
+      targets: [this, this.container],
+      x,
+      y,
+      duration: animate ? 200 : 0,
+    });
+
+    // this.setPosition(x, y);
+
+    // const { x: targetX, y: targetY } = this.getTopCenter();
+    // this.container.setPosition(targetX, targetY);
+
+    return { x, y };
   }
 
-  addSeedling(x) {
+  addSeedling(x, score, username) {
     // const graphics = this.scene.add.graphics({ lineStyle: {width: 1, color: 0xff0000 } });
     // const line = new Phaser.Geom.Line(dropX, this.getBounds().top, dropX, this.getBounds().top - 300);
     // graphics.strokeLineShape(line);
 
-    const username = this.createRandomUsername();
+    // const username = this.createRandomUsername();
 
-    const score = (1 - Math.abs(x) / (this.displayWidth / 2)) * 100;
-    const seedling = new Seedling(this.scene, x, 0, score, username);
+    const seedling = new Seedling(this.scene, x, -30, score, username);
     this.container.add(seedling);
   }
 
@@ -65,15 +143,39 @@ export default class Target extends Phaser.GameObjects.Image {
   }
 
   float(isStart = true) {
+    if (!this.floatTween) {
+      this.floatTween = this.scene.tweens.add({
+        targets: [this, this.container],
+        y: '-=10',
+        duration: 1000,
+        ease: Phaser.Math.Easing.Sine.InOut,
+        repeat: -1,
+        yoyo: true,
+        paused: true,
+      });
+    }
+
+    this.status.currentFloating = isStart;
     if (isStart) {
       this.floatTween.resume();
     } else {
       this.floatTween.pause();
-      this.centerTarget(true);
+      this.center('y', true);
     }
   }
 
   move(isStart = true) {
+    if (!this.moveTimer) {
+      this.moveTimer = this.scene.time.addEvent({
+        delay: 10000,
+        callback: this.move,
+        callbackScope: this,
+        loop: true,
+        paused: true,
+      });
+    }
+
+    this.status.currentMoving = isStart;
     if (isStart) {
       const rnd = Phaser.Math.RND;
       const newX = rnd.between(this.displayWidth + 5,
@@ -88,15 +190,7 @@ export default class Target extends Phaser.GameObjects.Image {
       this.moveTimer.paused = false;
     } else {
       this.moveTimer.paused = true;
-      this.centerTarget();
+      this.center('x', true);
     }
-  }
-
-  // for testing purpose only
-  // eslint-disable-next-line class-methods-use-this
-  createRandomUsername() {
-    const name1 = ['abandoned', 'able', 'absolute', 'adorable', 'adventurous', 'academic', 'acceptable', 'acclaimed', 'accomplished', 'accurate', 'aching', 'acidic', 'acrobatic', 'active', 'actual', 'adept', 'admirable', 'admired'];
-    const name2 = ['people', 'history', 'way', 'art', 'world', 'information', 'map', 'family', 'government', 'health', 'system', 'computer', 'meat', 'year', 'thanks', 'music', 'person', 'reading', 'method', 'data', 'food', 'understanding'];
-    return `${name1[Phaser.Math.Between(0, name1.length + 1)]} ${name2[Phaser.Math.Between(0, name2.length + 1)]}`;
   }
 }
