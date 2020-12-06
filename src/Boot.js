@@ -10,17 +10,18 @@ export default class Boot extends Phaser.Scene {
   preload() {
     /* Loading indicator */
     const { width, height } = this.scale;
-    const bg = this.add.rectangle(width / 2, height / 2 + 80, 950, 10, 0x666666);
+    const bg = this.add.rectangle(width / 2, height / 2 + 80, 500, 10, 0x666666);
     const bar = this.add.rectangle(bg.x, bg.y, bg.width, bg.height, 0xffffff).setScale(0, 1);
-    const loadingText = this.add.text(width / 2, height / 2, 'Loading...(0%)', {
-      fontSize: '100px',
+    const loadingText = this.add.text(width / 2, height / 2, 'LOADING...(0%)', {
+      fontSize: '60px',
+      fontFamily: 'Arial',
       align: 'center',
     })
       .setOrigin(0.5);
 
     /* Loading assets */
     this.load.atlas('flares', 'assets/flares.png', 'assets/flares.json');
-    this.load.image('bg', 'assets/bg.png');
+    this.load.image('bg', 'assets/bg.jpg');
 
     this.load.svg('target', 'assets/target.svg');
     this.load.svg('seedling', 'assets/seedling.svg', { scale: 0.5 });
@@ -46,7 +47,7 @@ export default class Boot extends Phaser.Scene {
       bar.setScale(progress, 1);
 
       const p = progress * 100;
-      loadingText.setText(`Loading...(${p.toFixed(0)}%)`);
+      loadingText.setText(`LOADING...(${p.toFixed(0)}%)`);
     });
   }
 

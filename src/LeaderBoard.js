@@ -4,8 +4,7 @@ export default class LeaderBoard {
   constructor(scene) {
     this.scene = scene;
     /** @type {Phaser.GameObjects.Container} container */
-    this.container = scene.add.container(0, 0)
-    this.container.setDepth(-1);
+    this.container = scene.add.container(0, 0);
     this.leaderBoard = scene.add.image(0, 0, 'board');
 
     this.container.add(this.leaderBoard);
@@ -34,8 +33,9 @@ export default class LeaderBoard {
 
     this.container.add(this.title);
     this.container.setPosition(this.showPos.x, this.hidePosY)
-      .setAlpha(0.9)
-      .setScale(0);
+      .setAlpha(0.7)
+      .setScale(0)
+      .setDepth(-1);
 
     this.showHide();
   }

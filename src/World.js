@@ -8,6 +8,7 @@ const keyboardShortcuts = {
   L: { description: 'Fire laser beam' },
   C: { description: 'Clear leaderboard' },
   R: { description: 'Remove all seedlings' },
+  A: { description: 'Drop trail', options: ['None', 'Trail1', 'Trail2'], current: 'Trail1' },
   S: { description: 'Laser collision', options: ['Bounce', 'Kill'], current: 'Bounce' },
   T: { description: 'Show Target', options: ['YES', 'NO', 'AUTO'], current: 'YES' },
   M: { description: 'Move target', options: ['YES', 'NO'], current: 'NO' },
@@ -19,187 +20,33 @@ export default class World extends Phaser.Scene {
   constructor() {
     super({
       key: 'world',
-      // physics: {
-      //   arcade: {
-      //     debug: true,
-      //     checkCollision: {
-      //       up: false,
-      //       down: false
-      //     }
-      //     // gravity: {}
-      //   },
-      //   matter: {
-      //     debug: true,
-      //     gravity: false
-      //   }
-      // }
     });
-
-    // this.dropGroup;
-    // this.target;
   }
 
   create() {
-    // this.sceneWidth = this.scale.width;
-    // , height } = this.scale;
-    // const width = window.innerWidth; // gameConfig.width;
-    // const height = window.innerHeight; // gameConfig.height;
-    // this.cameras.resize(width, height);
-
     /* for testing only */
-
-        this.add.image(0, 0, 'bg')
+    this.add.image(0, 0, 'bg')
       .setDisplaySize(this.scale.width, this.scale.height)
       .setOrigin(0)
+      .setTint(0x444444)
       .setDepth(-3);
 
-      // this.fireLaser();
+    // this.fireLaser();
     /* for testing only */
 
-    // const targetScaledWidth = width * 0.2;
-    // const zone = this.add.zone(width / 2, height / 2, width, height);
-    // const targetMiddle = this.physics.add.image(0, 0, 'target-middle');
-    // targetMiddle.setSize(targetMiddle.displayWidth, targetMiddle.displayHeight);
-    // Phaser.Display.Align.In.BottomCenter(targetMiddle, zone);
-    // targetMiddle.setScale(0.5)
-    //   // .setOrigin(0)
-    // targetMiddle.setOrigin(0)
-    //   .setScale(0.5)
-    //   .setImmovable(true);
-
-    // const targetLeft = this.physics.add.image(0, 0, 'target-left');
-    // Phaser.Display.Align.To.LeftCenter(targetLeft, targetMiddle);
-    // targetLeft.setScale(0.5)
-    //   // .setOrigin(0)
-    //   .setPosition(targetMiddle.getBounds().left - targetLeft.displayWidth / 2, targetMiddle.y)
-
-    // targetLeft.setOrigin(0)
-    //   .setScale(0.5)
-    //   .setImmovable(true);
-
-    // const targetRight = this.physics.add.image(0, 0, 'target-right');
-    // targetRight.setScale(0.5)
-    //   // .setOrigin(0)
-    //   .setPosition(targetMiddle.getBounds().right + targetMiddle.displayWidth / 2, targetMiddle.y)
-    // targetRight.setOrigin(0)
-    //   .setScale(0.5)
-    //   .setImmovable(true);
-
-    // // Phaser.Display.Align.To.RightCenter(targetRight, targetMiddle);
-
-    // this.add.image(0, 0, 'board')
-    //   .setDisplaySize(200, 150)
-    //   .setPosition(width - 120, height - 50);
-
-    this.leaderBoard = new LeaderBoard(this);
-
-    this.target = new Target(this, 0, 0);
-
     this.initKeyboardShortcuts();
+    this.leaderBoard = new LeaderBoard(this);
+    this.target = new Target(this, 0, 0);
     this.laserBounce = true;
-
-    // this.add.image(800, target.y, 'leaf')
-    //   .setScale(0.3)
-    //   .setOrigin(1);
-  
-    // const targetGroup = this.add.group([targetLeft, targetMiddle, targetRight]);
-    // targetGroup.children.iterate(child => {
-    //   child.setOrigin(0)
-    //     .setScale(0.5)
-    //     .setImmovable(true);
-    // });
-    
-    // Phaser.Actions.GridAlign(targetGroup.getChildren(), {
-    //   width: 3,
-    //   height: 0,
-    //   cellWidth: targetMiddle.displayWidth,
-    //   cellHeight: targetMiddle.displayHeight,
-    //   x: width / 2 - targetMiddle.displayWidth,
-    //   y: height - targetMiddle.displayHeight / 2
-    // });
-
-    // targetGroup.config.setScale(1, 2);
-
-    // target.y = height - 50;
-    // target.setSize(targetScaledWidth);
-
-    // setTimeout(() => {
-    //   target.setSize(target.width, target.height);
-    // }, 1000);
-
-    // target.displayWidth = targetScaledWidth;
-    // target.width = targetScaledWidth;
-    // target.scaleY = target.scaleX;
-    // target.y += target.displayHeight * 0.2;
-    // const targetHitArea = this.physics.add.image(target.x, target.y - 40);
-    // targetHitArea.setOrigin(0,0);
-    // targetHitArea.body.setCircle(target.displayWidth);
-    // targetHitArea.x = target.getTopLeft().x - target.displayWidth * 0.5;
-    // targetHitArea.y = target.getTopLeft().y + target.displayHeight * 0.05;
-    // console.log(target.getTopLeft(), targetHitArea.y, height);
-    // targetHitArea.setDebugBodyColor(0xffff00);
-    // const grass = this.matter.add.image(width / 2, height + 15, 'grass');
-
-    // const particles = this.add.particles('red');
-
-    // const drops = [];
-    // const trails = [];
-
-    this.dropGroup = this.add.group();
-    window.group = this.group;
-    // this.group1 = this.add.group();
-    // const testImages = this.textures.getTextureKeys().filter(name => name.startsWith('test'));
-    
-    // const test = this.physics.add.image(0, 0, 'logo');
-    // test.setPosition(test.width / 2 + Math.floor(Math.random() * Math.floor(width)), -100);
-
-    // for (let i = 0; i < 1; i++) {
-    //   testImages.forEach(imageName => {
-    //     const drop = new Drop(this, Phaser.Math.Between(0, width), -100, imageName);
-    //     // drop.body.setSize(10,10);
-    //     // drop.body.setOffset(10,10);
-    //     // setTimeout(() => {
-    //     //   console.log(drop.width, drop.body.width, drop.displayHeight, drop.body.displayHeight);
-    //     // }, 2000);
-    //     dropGroup.add(drop);
-    //     // const abc = this.physics.add.existing(drop1);
-    //     // console.log('abc', abc);
-        
-    //     // const drop = this.physics.add.image(Phaser.Math.Between(0, width), -100, drop1.texture)
-    //     //   .setVelocity(Phaser.Math.Between(-100, 150), Phaser.Math.Between(70, 250))
-    //     //   .setBounce(1)
-    //     //   .setCollideWorldBounds(true)
-    //     //   .setDepth(1)
-    //       // // .setDisplaySize(50, 50);
-  
-    //     // drops.push(drop);
-
-    //   //   this.add.particles(imageName, null, {
-    //   //     speed: 50,
-    //   //     // scale: { start: 0.5, end: 0.1 },
-    //   //     alpha: { start: 0.1, end: 0 },
-    //   //     // blendMode: 'ADD',
-    //   //     follow: drop
-    //   // });
-  
-    //     // const emitter = particles.createEmitter({
-    //     //   speed: 50,
-    //     //   // lifespan: 1000,
-    //     //   scale: { start: 0.5, end: 0.1 },
-    //     //   alpha: { start: 1, end: 0 },
-    //     //   blendMode: 'ADD',
-    //     //   follow: drop
-    //     // });
-  
-    //     // trails.push(emitter);
-    //   });
-    // }
-
-    // this.physics.world.on('worldbounds', (drop, up, down, left, right) => {
-    //   if (down) {
-    //     drop.gameObject.landed(false);
-    //   }
-    // });
+    this.dropTrail = 1;
+    /** @type {Phaser.GameObjects.Group} dropGroup */
+    this.dropGroup = this.add.group({
+      removeCallback: () => {
+        if (this.dropGroup.countActive() === 0) {
+          this.target.startAutoShowTimer();
+        }
+      },
+    });
 
     this.physics.add.collider(this.dropGroup);
     this.physics.add.collider(this.target, this.dropGroup, (target, drop) => {
@@ -233,7 +80,6 @@ export default class World extends Phaser.Scene {
       .setScale(1, 2)
       .setImmovable(true);
     laserBeam.body.setSize(1, 1);
-
 
     const collider = this.laserBounce ?
       this.physics.add.collider(laserBeam, this.dropGroup)
@@ -276,12 +122,10 @@ export default class World extends Phaser.Scene {
   /* ****** for testing only ****** */
   initKeyboardShortcuts() {
     /** @type {Phaser.GameObjects.Graphics} keyboardContainer */
-    const [width, height] = [330, 210];
+    const [width, height] = [330, 230];
     const title = this.add.text(10, 10, 'K: Keybaord shortcuts', {
       fontFamily: '"Press Start 2P"',
       fontSize: '12px',
-      // fixedWidth: width,
-      // align: 'center',
     });
 
     this.keyboardContainer = this.add.container(0, this.scale.height - height, title)
@@ -354,6 +198,10 @@ export default class World extends Phaser.Scene {
           break;
         case Phaser.Input.Keyboard.KeyCodes.D:
           this.createRandomDrop();
+          if (this.target.status.showStatus === TargetShowStatus.auto
+            && this.target.status.hidden) {
+            this.target.show();
+          }
           break;
         case Phaser.Input.Keyboard.KeyCodes.L:
           this.fireLaser();
@@ -364,32 +212,38 @@ export default class World extends Phaser.Scene {
         case Phaser.Input.Keyboard.KeyCodes.R:
           this.target.clear();
           break;
+        case Phaser.Input.Keyboard.KeyCodes.A:
+          this.dropTrail = this.dropTrail + 1 > 5 ? 1 : this.dropTrail + 1;
+          //  this.dropTrail === 'Trail1' ? 'Trail2' : 'Trail1';
+          // this.dropTrail = this.dropTrail === 'Trail1' ? 'Trail2' : 'Trail1';
+          this.updateShortcutValue(event.key.toUpperCase(), `Trail${this.dropTrail}`);
+          break;
         case Phaser.Input.Keyboard.KeyCodes.S:
-          this.updateShortcutValue(event.key.toUpperCase(), this.laserBounce ? 'Destroy' : 'Bounce');
           this.laserBounce = !this.laserBounce;
+          this.updateShortcutValue(event.key.toUpperCase(), this.laserBounce ? 'Bounce' : 'Destroy');
           break;
         case Phaser.Input.Keyboard.KeyCodes.T:
           if (this.target.status.showStatus === TargetShowStatus.hide) {
-            this.updateShortcutValue('T', 'YES');
+            this.updateShortcutValue(event.key.toUpperCase(), 'YES');
             this.target.updateShowStatus(TargetShowStatus.show);
           } else if (this.target.status.showStatus === TargetShowStatus.show) {
-            this.updateShortcutValue('T', 'AUTO');
+            this.updateShortcutValue(event.key.toUpperCase(), 'AUTO');
             this.target.updateShowStatus(TargetShowStatus.auto);
           } else {
-            this.updateShortcutValue('T', 'NO');
+            this.updateShortcutValue(event.key.toUpperCase(), 'NO');
             this.target.updateShowStatus(TargetShowStatus.hide);
           }
           break;
         case Phaser.Input.Keyboard.KeyCodes.M:
-          this.updateShortcutValue('M', this.target.status.currentMoving ? 'NO' : 'YES');
           this.target.move(!this.target.status.currentMoving);
+          this.updateShortcutValue(event.key.toUpperCase(), this.target.status.currentMoving ? 'YES' : 'NO');
           break;
         case Phaser.Input.Keyboard.KeyCodes.F:
-          this.updateShortcutValue('F', this.target.status.currentFloating ? 'NO' : 'YES');
           this.target.float(!this.target.status.currentFloating);
+          this.updateShortcutValue(event.key.toUpperCase(), this.target.status.currentFloating ? 'YES' : 'NO');
           break;
         case Phaser.Input.Keyboard.KeyCodes.B:
-          this.updateShortcutValue('B', this.leaderBoard.hidden ? 'YES' : 'NO');
+          this.updateShortcutValue(event.key.toUpperCase(), this.leaderBoard.hidden ? 'YES' : 'NO');
           this.leaderBoard.showHide();
           break;
         // case Phaser.Input.Keyboard.KeyCodes.A:
@@ -427,7 +281,8 @@ export default class World extends Phaser.Scene {
   createRandomDrop() {
     const testImages = this.textures.getTextureKeys().filter((name) => name.startsWith('test'));
     const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
-    const drop = new Drop(this, Phaser.Math.Between(0, this.scale.width), -100, imageName);
+    const drop = new Drop(this, Phaser.Math.Between(0, this.scale.width),
+      -100, imageName, this.dropTrail);
     this.dropGroup.add(drop);
   }
 

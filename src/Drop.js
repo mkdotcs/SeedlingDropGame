@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
 export default class Drop extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, texture) {
+  constructor(scene, x, y, texture, trail) {
     super(scene, x, y, texture);
 
     scene.add.existing(this);
@@ -27,23 +27,56 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       yoyo: true,
       onUpdate: (tween) => {
         this.setAngle(tween.getValue());
-        // this.setAngle(Math.sin(this.y / 20) * 10);
       },
     });
 
-    this.trail = scene.add.particles('flares').createEmitter({
-      frame: ['red', 'blue', 'green', 'yellow'],
+    this.trail = scene.add.particles(texture).createEmitter({
+      // frame: this.getTrailFrames(trail),
       speed: 50,
-      lifespan: {
-        onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
-      },
-      alpha: {
-        onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
-      },
-      scale: { start: 0.6, end: 0 },
+      // x: this.x,
+      // y: this.y,
+      speedX: 200,
+      speedY: 200,
+      lifespan: 400,
       blendMode: 'SCREEN',
       follow: this,
     });
+    // this.trail = scene.add.particles('flares').createEmitter({
+    //   frame: this.getTrailFrames(trail),
+    //   speed: 50,
+    //   lifespan: {
+    //     onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
+    //   },
+    //   alpha: {
+    //     onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
+    //   },
+    //   scale: { start: 0.6, end: 0 },
+    //   blendMode: 'SCREEN',
+    //   follow: this,
+    // });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  getTrailFrames(trail) {
+    switch (trail) {
+      case 1:
+        return ['red', 'blue', 'green', 'yellow'];
+
+      case 2:
+        return 'red';
+
+      case 3:
+        return 'blue';
+
+      case 4:
+        return 'green';
+
+      case 5:
+        return 'yellow';
+
+      default:
+        return '';
+    }
   }
 
   preUpdate(time, delta) {

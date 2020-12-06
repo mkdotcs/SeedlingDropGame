@@ -14,13 +14,8 @@ export default class Target extends Phaser.GameObjects.Image {
     this.status = {
       currentMoving: false,
       currentFloating: true,
-      lastMoving: false,
-      lastFloating: true,
+      hidden: false,
       showStatus: TargetShowStatus.show,
-      saveCurrentValues() {
-        this.lastMoving = this.currentMoving;
-        this.lastFloating = this.currentFloating;
-      },
     };
 
     scene.add.existing(this);
@@ -41,53 +36,64 @@ export default class Target extends Phaser.GameObjects.Image {
     this.container = scene.add.container(0, 0 + 5)
       .setDepth(-1);
 
-    this.autoTimer = this.scene.time.addEvent({
-      delay: 2000,
-      paused: true,
-      loop: true,
-      callback: () => {
-        this.status.saveCurrentValues();
-        this.move(false);
-        this.float(false);
-        this.updateYPos(this.scene.scale.height + 300);
-        this.autoTimer.paused = true;
-      },
-    });
-
     this.y = scene.scale.height + this.displayHeight;
     this.center('x');
     this.updateShowStatus(TargetShowStatus.show);
   }
 
   updateShowStatus(status) {
-    this.autoTimer.paused = true;
-
     switch (status) {
-      case TargetShowStatus.hide:
-        if (this.status.showStatus === TargetShowStatus.show) {
-          this.status.saveCurrentValues();
-        }
-        this.move(false);
-        this.float(false);
-        this.updateYPos(this.scene.scale.height + 300);
+      case TargetShowStatus.show:
+        this.show();
         break;
 
-      case TargetShowStatus.show:
-        this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
-          () => {
-            if (this.status.lastMoving) {
-              this.move();
-            }
-            if (this.status.lastFloating) {
-              this.float();
-            }
-          });
+      case TargetShowStatus.hide:
+        this.hide();
         break;
+
       default:
-        this.autoTimer.paused = false;
+        this.startAutoShowTimer();
         break;
     }
     this.status.showStatus = status;
+  }
+
+  show() {
+    this.status.hidden = false;
+    this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
+      () => {
+        if (this.status.currentMoving) {
+          this.move(true, this.status.showStatus !== TargetShowStatus.auto);
+        }
+        if (this.status.currentFloating) {
+          this.float(true, this.status.showStatus !== TargetShowStatus.auto);
+        }
+      });
+
+    if (this.autoTimer) {
+      this.autoTimer.remove();
+      this.autoTimer = undefined;
+    }
+  }
+
+  hide() {
+    this.status.hidden = true;
+    this.move(false, this.status.showStatus !== TargetShowStatus.auto);
+    this.float(false, this.status.showStatus !== TargetShowStatus.auto);
+    this.updateYPos(this.scene.scale.height + 300);
+  }
+
+  startAutoShowTimer() {
+    if (!this.autoTimer) {
+      this.autoTimer = this.scene.time.addEvent({
+        delay: 2000,
+        callback: () => {
+          this.hide();
+          this.autoTimer.remove();
+          this.autoTimer = undefined;
+        },
+      });
+    }
   }
 
   updateYPos(y, callback) {
@@ -119,21 +125,10 @@ export default class Target extends Phaser.GameObjects.Image {
       duration: animate ? 200 : 0,
     });
 
-    // this.setPosition(x, y);
-
-    // const { x: targetX, y: targetY } = this.getTopCenter();
-    // this.container.setPosition(targetX, targetY);
-
     return { x, y };
   }
 
   addSeedling(x, score, username) {
-    // const graphics = this.scene.add.graphics({ lineStyle: {width: 1, color: 0xff0000 } });
-    // const line = new Phaser.Geom.Line(dropX, this.getBounds().top, dropX, this.getBounds().top - 300);
-    // graphics.strokeLineShape(line);
-
-    // const username = this.createRandomUsername();
-
     const seedling = new Seedling(this.scene, x, -30, score, username);
     this.container.add(seedling);
   }
@@ -142,7 +137,7 @@ export default class Target extends Phaser.GameObjects.Image {
     this.container.removeAll(true);
   }
 
-  float(isStart = true) {
+  float(isStart = true, update = true) {
     if (!this.floatTween) {
       this.floatTween = this.scene.tweens.add({
         targets: [this, this.container],
@@ -155,7 +150,10 @@ export default class Target extends Phaser.GameObjects.Image {
       });
     }
 
-    this.status.currentFloating = isStart;
+    if (update) {
+      this.status.currentFloating = isStart;
+    }
+
     if (isStart) {
       this.floatTween.resume();
     } else {
@@ -164,7 +162,7 @@ export default class Target extends Phaser.GameObjects.Image {
     }
   }
 
-  move(isStart = true) {
+  move(isStart = true, update = true) {
     if (!this.moveTimer) {
       this.moveTimer = this.scene.time.addEvent({
         delay: 10000,
@@ -175,7 +173,9 @@ export default class Target extends Phaser.GameObjects.Image {
       });
     }
 
-    this.status.currentMoving = isStart;
+    if (update) {
+      this.status.currentMoving = isStart;
+    }
     if (isStart) {
       const rnd = Phaser.Math.RND;
       const newX = rnd.between(this.displayWidth + 5,
