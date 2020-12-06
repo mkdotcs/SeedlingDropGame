@@ -38,27 +38,12 @@ export default class Target extends Phaser.GameObjects.Image {
 
     this.y = scene.scale.height + this.displayHeight;
     this.center('x');
-    this.updateShowStatus(TargetShowStatus.show);
-  }
-
-  updateShowStatus(status) {
-    switch (status) {
-      case TargetShowStatus.show:
-        this.show();
-        break;
-
-      case TargetShowStatus.hide:
-        this.hide();
-        break;
-
-      default:
-        this.startAutoShowTimer();
-        break;
-    }
-    this.status.showStatus = status;
+    this.show();
   }
 
   show() {
+    this.removeTimer();
+
     this.status.hidden = false;
     this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
       () => {
@@ -69,28 +54,23 @@ export default class Target extends Phaser.GameObjects.Image {
           this.float(true, this.status.showStatus !== TargetShowStatus.auto);
         }
       });
-
-    if (this.autoTimer) {
-      this.autoTimer.remove();
-      this.autoTimer = undefined;
-    }
   }
 
   hide() {
+    this.removeTimer();
+
     this.status.hidden = true;
-    this.move(false, this.status.showStatus !== TargetShowStatus.auto);
-    this.float(false, this.status.showStatus !== TargetShowStatus.auto);
+    this.move(false, false);
+    this.float(false, false);
     this.updateYPos(this.scene.scale.height + 300);
   }
 
   startAutoShowTimer() {
     if (!this.autoTimer) {
       this.autoTimer = this.scene.time.addEvent({
-        delay: 2000,
+        delay: 3000,
         callback: () => {
           this.hide();
-          this.autoTimer.remove();
-          this.autoTimer = undefined;
         },
       });
     }
@@ -115,7 +95,7 @@ export default class Target extends Phaser.GameObjects.Image {
     let y = sceneHeight - this.displayHeight / 4;
     if (dir) {
       x = dir === 'y' ? this.x : x;
-      y = dir === 'x' ? this.y : y;
+      y = dir === 'x' || this.status.hidden ? this.y : y;
     }
 
     this.scene.tweens.add({
@@ -154,7 +134,7 @@ export default class Target extends Phaser.GameObjects.Image {
       this.status.currentFloating = isStart;
     }
 
-    if (isStart) {
+    if (isStart && !this.status.hidden) {
       this.floatTween.resume();
     } else {
       this.floatTween.pause();
@@ -191,6 +171,13 @@ export default class Target extends Phaser.GameObjects.Image {
     } else {
       this.moveTimer.paused = true;
       this.center('x', true);
+    }
+  }
+
+  removeTimer() {
+    if (this.autoTimer) {
+      this.autoTimer.remove();
+      this.autoTimer = undefined;
     }
   }
 }

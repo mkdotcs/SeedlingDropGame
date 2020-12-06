@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import WebFontFile from './utils/WebFontFile';
+import WebFontFile from './helpers/WebFontFile';
 
 export default class Boot extends Phaser.Scene {
   constructor() {

@@ -2,13 +2,14 @@ import Phaser from 'phaser';
 import Drop from './Drop';
 import Target, { TargetShowStatus } from './Target';
 import LeaderBoard from './LeaderBoard';
+import KeyboardHandler from './helpers/KeyboardHandler';
 
 const keyboardShortcuts = {
   D: { description: 'Random drop' },
   L: { description: 'Fire laser beam' },
   C: { description: 'Clear leaderboard' },
   R: { description: 'Remove all seedlings' },
-  A: { description: 'Drop trail', options: ['None', 'Trail1', 'Trail2'], current: 'Trail1' },
+  A: { description: 'Drop trail', options: ['None', 'Trail1', 'Trail2', 'Trail3', 'Trail4', 'Trail5', 'Trail6'], current: 'None' },
   S: { description: 'Laser collision', options: ['Bounce', 'Kill'], current: 'Bounce' },
   T: { description: 'Show Target', options: ['YES', 'NO', 'AUTO'], current: 'YES' },
   M: { description: 'Move target', options: ['YES', 'NO'], current: 'NO' },
@@ -25,10 +26,12 @@ export default class World extends Phaser.Scene {
 
   create() {
     /* for testing only */
+    this.setupControlKeys();
+
     this.add.image(0, 0, 'bg')
       .setDisplaySize(this.scale.width, this.scale.height)
       .setOrigin(0)
-      .setTint(0x444444)
+      .setTint(0x555555)
       .setDepth(-3);
 
     // this.fireLaser();
@@ -38,11 +41,12 @@ export default class World extends Phaser.Scene {
     this.leaderBoard = new LeaderBoard(this);
     this.target = new Target(this, 0, 0);
     this.laserBounce = true;
-    this.dropTrail = 1;
+    this.dropTrail = 0;
     /** @type {Phaser.GameObjects.Group} dropGroup */
     this.dropGroup = this.add.group({
       removeCallback: () => {
-        if (this.dropGroup.countActive() === 0) {
+        if (this.dropGroup.countActive() === 0
+          && this.target.status.showStatus === TargetShowStatus.auto) {
           this.target.startAutoShowTimer();
         }
       },
@@ -51,7 +55,10 @@ export default class World extends Phaser.Scene {
     this.physics.add.collider(this.dropGroup);
     this.physics.add.collider(this.target, this.dropGroup, (target, drop) => {
       if (target.body.touching.up) {
-        const { left: dropLeft, right: dropRight } = drop.getBounds();
+        const {
+          left: dropLeft,
+          right: dropRight,
+        } = drop.getBounds();
         let dropX = drop.x;
 
         if (drop.x < target.body.left) {
@@ -61,16 +68,15 @@ export default class World extends Phaser.Scene {
         }
         const seedlingX = dropX - target.x;
         const score = (1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100;
-        const username = this.createRandomUsername();
+        const username = World.createRandomUsername();
 
         drop.landed(true, dropX, () => target.addSeedling(seedlingX, score, username));
-        this.leaderBoard.addHighScore({ score, username });
+        this.leaderBoard.addHighScore({
+          score,
+          username,
+        });
       }
     });
-
-    /* for testing only */
-    this.setupControlKeys();
-    /* for testing only */
   }
 
   fireLaser() {
@@ -96,7 +102,8 @@ export default class World extends Phaser.Scene {
           scaleY: 10,
           duration: 1000,
           onComplete: () => {
-            this.cameras.main.shake(200, 0.02);
+            // this.cameras.main.shake(200, 0.02);
+            this.cameras.main.shake(800, 0.01);
             laserBeam.setScale(150, 2);
             laserBeam.body.setSize(laserBeam.width, 5);
           },
@@ -107,7 +114,7 @@ export default class World extends Phaser.Scene {
           duration: 1000,
           onUpdate: () => {
             if (laserBeam.alpha < 0.8) {
-              laserBeam.body.setSize(1,1);
+              laserBeam.body.setSize(1, 1);
             }
           },
           onComplete: () => {
@@ -187,95 +194,10 @@ export default class World extends Phaser.Scene {
   }
 
   setupControlKeys() {
-    this.input.keyboard.on('keyup', (event) => {
-      switch (event.keyCode) {
-        case Phaser.Input.Keyboard.KeyCodes.K:
-          this.add.tween({
-            targets: this.keyboardContainer,
-            alpha: +!this.keyboardContainer.alpha,
-            duration: 300,
-          });
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.D:
-          this.createRandomDrop();
-          if (this.target.status.showStatus === TargetShowStatus.auto
-            && this.target.status.hidden) {
-            this.target.show();
-          }
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.L:
-          this.fireLaser();
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.C:
-          this.leaderBoard.clear();
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.R:
-          this.target.clear();
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.A:
-          this.dropTrail = this.dropTrail + 1 > 5 ? 1 : this.dropTrail + 1;
-          //  this.dropTrail === 'Trail1' ? 'Trail2' : 'Trail1';
-          // this.dropTrail = this.dropTrail === 'Trail1' ? 'Trail2' : 'Trail1';
-          this.updateShortcutValue(event.key.toUpperCase(), `Trail${this.dropTrail}`);
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.S:
-          this.laserBounce = !this.laserBounce;
-          this.updateShortcutValue(event.key.toUpperCase(), this.laserBounce ? 'Bounce' : 'Destroy');
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.T:
-          if (this.target.status.showStatus === TargetShowStatus.hide) {
-            this.updateShortcutValue(event.key.toUpperCase(), 'YES');
-            this.target.updateShowStatus(TargetShowStatus.show);
-          } else if (this.target.status.showStatus === TargetShowStatus.show) {
-            this.updateShortcutValue(event.key.toUpperCase(), 'AUTO');
-            this.target.updateShowStatus(TargetShowStatus.auto);
-          } else {
-            this.updateShortcutValue(event.key.toUpperCase(), 'NO');
-            this.target.updateShowStatus(TargetShowStatus.hide);
-          }
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.M:
-          this.target.move(!this.target.status.currentMoving);
-          this.updateShortcutValue(event.key.toUpperCase(), this.target.status.currentMoving ? 'YES' : 'NO');
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.F:
-          this.target.float(!this.target.status.currentFloating);
-          this.updateShortcutValue(event.key.toUpperCase(), this.target.status.currentFloating ? 'YES' : 'NO');
-          break;
-        case Phaser.Input.Keyboard.KeyCodes.B:
-          this.updateShortcutValue(event.key.toUpperCase(), this.leaderBoard.hidden ? 'YES' : 'NO');
-          this.leaderBoard.showHide();
-          break;
-        // case Phaser.Input.Keyboard.KeyCodes.A:
-        //   this.leaderBoard.addHighScore({
-        //     score: Math.floor(Math.random() * (100 - 1 + 1) + 1),
-        //     username: this.createRandomUsername(), //'admirable',
-        //   });
-        //   // this.leaderBoard.addHighScore({
-        //   //   score: 100,
-        //   //   username: 'a12345678901234567890',
-        //   // });
-        //   // this.leaderBoard.addHighScore({
-        //   //   score: 82.123,
-        //   //   username: 'b12345678901234567890',
-        //   // });
-        //   // this.leaderBoard.addHighScore({
-        //   //   score: 60.1,
-        //   //   username: 'c12345678901234567890',
-        //   // });
-        //   // this.leaderBoard.addHighScore({
-        //   //   score: 20.85,
-        //   //   username: 'd12345678901234567890',
-        //   // });
-        //   // this.leaderBoard.addHighScore({
-        //   //   score: 5.65,
-        //   //   username: 'e12345678901234567890',
-        //   // });
-          // break;
-        default:
-          break;
-      }
-    });
+    if (!this.keyboardHandler) {
+      this.keyboardHandler = new KeyboardHandler(this);
+    }
+    this.input.keyboard.on('keyup', (event) => this.keyboardHandler.handle(event));
   }
 
   createRandomDrop() {
@@ -286,8 +208,7 @@ export default class World extends Phaser.Scene {
     this.dropGroup.add(drop);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  createRandomUsername() {
+  static createRandomUsername() {
     const name = ['abandoned', 'able', 'absolute', 'adorable', 'adventurous', 'academic', 'acceptable', 'acclaimed', 'accomplished', 'accurate', 'aching', 'acidic', 'acrobatic', 'active', 'actual', 'adept', 'admirable', 'admired'];
     return `${name[Phaser.Math.Between(0, name.length - 1)]}`;
   }

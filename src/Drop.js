@@ -1,5 +1,7 @@
 import Phaser from 'phaser';
 
+const colors = ['red', 'blue', 'green', 'yellow'];
+
 export default class Drop extends Phaser.GameObjects.Sprite {
   constructor(scene, x, y, texture, trail) {
     super(scene, x, y, texture);
@@ -12,8 +14,8 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
       // .setVelocity(0, Phaser.Math.Between(70, 250))
       .setBounce(1)
-      .setCollideWorldBounds(true)
-      .setAllowRotation();
+      .setCollideWorldBounds(true);
+
     this.setDepth(1);
 
     this.speed = 200;
@@ -30,52 +32,29 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       },
     });
 
-    this.trail = scene.add.particles(texture).createEmitter({
-      // frame: this.getTrailFrames(trail),
-      speed: 50,
-      // x: this.x,
-      // y: this.y,
-      speedX: 200,
-      speedY: 200,
-      lifespan: 400,
-      blendMode: 'SCREEN',
-      follow: this,
-    });
-    // this.trail = scene.add.particles('flares').createEmitter({
-    //   frame: this.getTrailFrames(trail),
-    //   speed: 50,
-    //   lifespan: {
-    //     onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
-    //   },
-    //   alpha: {
-    //     onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
-    //   },
-    //   scale: { start: 0.6, end: 0 },
-    //   blendMode: 'SCREEN',
-    //   follow: this,
-    // });
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  getTrailFrames(trail) {
-    switch (trail) {
-      case 1:
-        return ['red', 'blue', 'green', 'yellow'];
-
-      case 2:
-        return 'red';
-
-      case 3:
-        return 'blue';
-
-      case 4:
-        return 'green';
-
-      case 5:
-        return 'yellow';
-
-      default:
-        return '';
+    if (trail === 1) {
+      this.trail = scene.add.particles(texture).createEmitter({
+        speed: 0,
+        scale: { start: 1, end: 0 },
+        alpha: { start: 0.3, end: 0 },
+        frequency: 100,
+        lifespan: 1000,
+        follow: this,
+      });
+    } else if (trail > 1) {
+      this.trail = scene.add.particles('flares').createEmitter({
+        frame: trail === 2 ? colors : colors[trail - 3],
+        speed: 50,
+        lifespan: {
+          onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
+        },
+        alpha: {
+          onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
+        },
+        scale: { start: 0.6, end: 0 },
+        blendMode: 'SCREEN',
+        follow: this,
+      });
     }
   }
 
@@ -83,6 +62,9 @@ export default class Drop extends Phaser.GameObjects.Sprite {
     super.preUpdate(time, delta);
     if (this.y + this.displayHeight / 2 > this.scene.scale.height) {
       this.landed(false);
+    }
+    if (this.body.velocity.y < 0 && this.y < -100) {
+      this.cleanUp(true);
     }
   }
 
@@ -103,20 +85,25 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       on: false,
     });
     emitter.explode();
-    emitter.onParticleDeath((particle) => {
+    emitter.onParticleDeath(() => {
       if (emitter.dead.length === emitter.quantity.propertyValue) {
-        this.cleanUp();
+        this.cleanUp(true);
         this.destroy();
       }
     });
   }
 
-  cleanUp() {
+  cleanUp(destroy) {
     this.wobbleTween.stop();
-    this.trail.stop();
+    if (this.trail) {
+      this.trail.stop();
+    }
     if (this.body) {
       this.body.enable = false;
       this.body.setVelocity(0);
+    }
+    if (destroy) {
+      this.destroy();
     }
   }
 
@@ -150,8 +137,8 @@ export default class Drop extends Phaser.GameObjects.Sprite {
         scaleY: 0,
         angle: -360,
         ease: Phaser.Math.Easing.Cubic.Out,
-        delay: 1000, // config.dropTimeout
-        duration: 5000,
+        delay: 5000, // config.dropTimeout
+        duration: 1000,
         repeat: 0,
         yoyo: false,
         onComplete: () => this.destroy(),

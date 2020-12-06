@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-export default class LeaderBoard {
+export default class {
   constructor(scene) {
     this.scene = scene;
     /** @type {Phaser.GameObjects.Container} container */
@@ -29,7 +29,7 @@ export default class LeaderBoard {
       fixedWidth: this.width,
       align: 'center',
     })
-      .setStroke('#333333', 2);
+      .setStroke('#333333', 6);
 
     this.container.add(this.title);
     this.container.setPosition(this.showPos.x, this.hidePosY)
