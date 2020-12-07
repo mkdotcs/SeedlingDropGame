@@ -1,4 +1,1 @@
-
-Seedling Drop Game v3
-====================
-
+# Seedling Drop Game v1

@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 import WebFontFile from './helpers/WebFontFile';
+import globalConfig from './config/globalConfig';
 
 export default class Boot extends Phaser.Scene {
   constructor() {
@@ -21,7 +22,6 @@ export default class Boot extends Phaser.Scene {
 
     /* Loading assets */
     this.load.atlas('flares', 'assets/flares.png', 'assets/flares.json');
-    this.load.image('bg', 'assets/bg.jpg');
 
     this.load.svg('target', 'assets/target.svg');
     this.load.svg('seedling', 'assets/seedling.svg', { scale: 0.5 });
@@ -34,14 +34,18 @@ export default class Boot extends Phaser.Scene {
     this.load.setCORS('anonymous');
     this.load.setCORS('Anonymous');
 
-    [
-      'https://static-cdn.jtvnw.net/emoticons/v1/303046121/2.0',
-      'https://static-cdn.jtvnw.net/emoticons/v1/302039277/2.0',
-      'https://static-cdn.jtvnw.net/emoticons/v1/301988022/2.0',
-      'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/5ada077451d4120ea3918426/2x',
-      'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/5abc0096a05ad63caeccbe58/2x',
-      'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/59f06613ba7cdd47e9a4cad2/2x',
-    ].map((url, index) => this.load.image(`test${index}`, url));
+    if (globalConfig.test) {
+      this.load.image('bg', 'assets/bg.jpg');
+
+      [
+        'https://static-cdn.jtvnw.net/emoticons/v1/303046121/2.0',
+        'https://static-cdn.jtvnw.net/emoticons/v1/302039277/2.0',
+        'https://static-cdn.jtvnw.net/emoticons/v1/301988022/2.0',
+        'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/5ada077451d4120ea3918426/2x',
+        'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/5abc0096a05ad63caeccbe58/2x',
+        'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/59f06613ba7cdd47e9a4cad2/2x',
+      ].map((url, index) => this.load.image(`test${index}`, url));
+    }
 
     this.load.on('progress', (progress) => {
       bar.setScale(progress, 1);

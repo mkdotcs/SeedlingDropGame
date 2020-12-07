@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
-import Boot from './Boot';
-import World from './World';
+import Boot from '../Boot';
+import World from '../World';
+
+// Phaser engine's configuration
 
 export default {
   type: Phaser.AUTO,
@@ -23,16 +25,11 @@ export default {
   physics: {
     default: 'arcade',
     arcade: {
-      // gravity: false
       debug: false,
       checkCollision: {
         up: false,
         down: false,
       },
     },
-  //   matter: {
-  //     debug: true,
-  //     gravity: { x: 0, y: 0 }
-  //   }
   },
 };

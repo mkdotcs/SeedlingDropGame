@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 export default class {
   constructor(scene) {
     this.scene = scene;
+
     /** @type {Phaser.GameObjects.Container} container */
     this.container = scene.add.container(0, 0);
     this.leaderBoard = scene.add.image(0, 0, 'board');
@@ -12,7 +13,7 @@ export default class {
     const SCALE_X = 2.6;
     const SCALE_Y = 1.9;
     this.leaderBoard.setScale(SCALE_X, SCALE_Y);
-    this.hidden = true;
+    this.visible = true;
 
     Object.assign(this, this.container.getBounds());
 
@@ -29,7 +30,7 @@ export default class {
       fixedWidth: this.width,
       align: 'center',
     })
-      .setStroke('#333333', 6);
+      .setStroke('#333333', 4);
 
     this.container.add(this.title);
     this.container.setPosition(this.showPos.x, this.hidePosY)
@@ -37,27 +38,33 @@ export default class {
       .setScale(0)
       .setDepth(-1);
 
+    // load high scores from local storage
+    const highScores = JSON.parse(localStorage.highScores || '[]');
+    highScores.forEach((highScore) => {
+      this.addHighScore(highScore);
+    });
     this.showHide();
   }
 
   showHide() {
-    const y = this.hidden ? this.showPos.y : this.hidePosY;
-    const scale = this.hidden ? 1 : 0;
+    const y = this.visible ? this.showPos.y : this.hidePosY;
+    const scale = this.visible ? 1 : 0;
     this.scene.tweens.add({
       targets: this.container,
       y,
       scale,
       duration: 600,
       ease: Phaser.Math.Easing.Back.Out,
-      onComplete: () => { this.hidden = !this.hidden; },
+      onComplete: () => { this.visible = !this.visible; },
     });
   }
 
   addHighScore(highScore) {
-    const score = (`   ${highScore.score.toFixed(2)}`).slice(-6);
+    const { score: newScore, username: newUsername } = highScore;
+    const formattedScore = (`   ${newScore}`).slice(-6);
     const text = this.scene.add.text(
       -this.width / 2 + 10, this.height,
-      `${score} ${highScore.username}`, {
+      `${formattedScore} ${newUsername}`, {
         fontFamily: '"Press Start 2P"',
         fontSize: '12px',
         fixedWidth: this.width - 24,
@@ -70,6 +77,8 @@ export default class {
     this.container.add(text);
     // eslint-disable-next-line no-bitwise
     this.container.sort('score', (a, b) => (a.data && b.data ? a.data.values.score < b.data.values.score | 0 : -1));
+
+    // Filter the list and remove duplicates for the same user
     this.container.list = this.container.list.reduce((unique, current, index) => {
       // eslint-disable-next-line max-len
       const found = unique.findIndex((e) => (e.data ? e.data.values.username === current.data.values.username : false)) > -1;
@@ -80,25 +89,33 @@ export default class {
       return [...unique, current];
     }, []);
 
+    /* Limit the list to maximum of 5 highscores, taking in considration that
+      the first 2 items need to be skipped (background and title)  */
     if (this.container.list.length === 8) {
       this.container.removeAt(7, true);
     }
 
+    const highScores = [];
     this.container.list.forEach((item, index) => {
       if (item.data) {
+        const { data: { values: { score, username } } } = item;
+        highScores.push({ score, username });
         const y = (-this.height / 2 + 35) + (index - 2) * 20;
         if (item.y !== y) {
           this.moveText(index, y);
         }
       }
     });
+
+    // Save high scores to local storage
+    localStorage.highScores = JSON.stringify(highScores);
   }
 
   moveText(index, toY) {
     const scoreText = this.container.list[index];
 
     if (scoreText) {
-      if (this.hidden) {
+      if (this.visible) {
         scoreText.y = toY;
         return;
       }
@@ -116,5 +133,6 @@ export default class {
   clear() {
     const removed = this.container.list.splice(2, this.container.list.length - 2);
     removed.forEach((child) => child.destroy());
+    localStorage.highScores = [];
   }
 }

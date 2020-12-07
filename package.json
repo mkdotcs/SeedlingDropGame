@@ -1,28 +1,24 @@
 {
   "name": "seedling-drop-game",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "description": "",
   "main": "src/index.html",
   "alias": {
     "phaser": "./node_modules/phaser/src/phaser-arcade-physics.js"
   },
   "scripts": {
-    "start": "parcel src/index.html -p 8000",
+    "start": "parcel src/index.html -p 1234",
     "build": "parcel build src/index.html --out-dir dist",
     "build-gh": "parcel build src/index.html --out-dir dist --public-url ./",
-    "clean": "rm -v dist/*",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm -v dist/*"
   },
-  "keywords": [
-    "phaser",
-    "phaser3",
-    "phaser-boilerplate"
-  ],
+  "keywords": [],
   "author": "Mohd. Ben Huwaireb (MrBenCoder) <huwaireb@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "matter": "^0.2.0",
     "phaser": "^3.24.1",
+    "tmi.js": "^1.5.0",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {

@@ -1,21 +1,14 @@
 import Phaser from 'phaser';
-import Drop from './Drop';
-import Target, { TargetShowStatus } from './Target';
-import LeaderBoard from './LeaderBoard';
-import KeyboardHandler from './helpers/KeyboardHandler';
+import tmi from 'tmi.js';
 
-const keyboardShortcuts = {
-  D: { description: 'Random drop' },
-  L: { description: 'Fire laser beam' },
-  C: { description: 'Clear leaderboard' },
-  R: { description: 'Remove all seedlings' },
-  A: { description: 'Drop trail', options: ['None', 'Trail1', 'Trail2', 'Trail3', 'Trail4', 'Trail5', 'Trail6'], current: 'None' },
-  S: { description: 'Laser collision', options: ['Bounce', 'Kill'], current: 'Bounce' },
-  T: { description: 'Show Target', options: ['YES', 'NO', 'AUTO'], current: 'YES' },
-  M: { description: 'Move target', options: ['YES', 'NO'], current: 'NO' },
-  F: { description: 'Float target', options: ['YES', 'NO'], current: 'YES' },
-  B: { description: 'Show Leaderboard', options: ['YES', 'NO'], current: 'YES' },
-};
+import Drop from './Drop';
+import Target from './Target';
+import LeaderBoard from './LeaderBoard';
+import keyboardHandler from './helpers/keyboardHandler';
+import {
+  keyboardShortcuts, globalCommands, modCommands, targetShowStatus,
+} from './helpers/constants';
+import globalConfig from './config/globalConfig';
 
 export default class World extends Phaser.Scene {
   constructor() {
@@ -25,28 +18,28 @@ export default class World extends Phaser.Scene {
   }
 
   create() {
-    /* for testing only */
-    this.setupControlKeys();
+    /* (test: true) in config */
+    if (globalConfig.test) {
+      this.add.image(0, 0, 'bg')
+        .setDisplaySize(this.scale.width, this.scale.height)
+        .setOrigin(0)
+        .setTint(0x555555)
+        .setDepth(-3);
 
-    this.add.image(0, 0, 'bg')
-      .setDisplaySize(this.scale.width, this.scale.height)
-      .setOrigin(0)
-      .setTint(0x555555)
-      .setDepth(-3);
+      this.initKeyboardShortcuts();
+      this.input.keyboard.on('keyup', (event) => keyboardHandler.handle(this, event));
+    }
 
-    // this.fireLaser();
-    /* for testing only */
-
-    this.initKeyboardShortcuts();
     this.leaderBoard = new LeaderBoard(this);
     this.target = new Target(this, 0, 0);
     this.laserBounce = true;
     this.dropTrail = 0;
+
     /** @type {Phaser.GameObjects.Group} dropGroup */
     this.dropGroup = this.add.group({
       removeCallback: () => {
         if (this.dropGroup.countActive() === 0
-          && this.target.status.showStatus === TargetShowStatus.auto) {
+          && this.target.status.showStatus === targetShowStatus.auto) {
           this.target.startAutoShowTimer();
         }
       },
@@ -67,7 +60,7 @@ export default class World extends Phaser.Scene {
           dropX = target.body.right - ((target.body.right - dropLeft) / 2);
         }
         const seedlingX = dropX - target.x;
-        const score = (1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100;
+        const score = ((1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100).toFixed(2);
         const username = World.createRandomUsername();
 
         drop.landed(true, dropX, () => target.addSeedling(seedlingX, score, username));
@@ -77,6 +70,25 @@ export default class World extends Phaser.Scene {
         });
       }
     });
+
+    if (!globalConfig.test) {
+      // Connect to twitch channel
+      const client = new tmi.Client({
+        options: { debug: true, messagesLogLevel: 'info' },
+        connection: {
+          secure: true,
+          reconnect: true,
+        },
+        channels: [globalConfig.channelName],
+      });
+
+      client.connect();
+
+      client.on('message', async (channel, tags, message, self) => {
+        if (self) return;
+        console.log(tags, message, self);
+      });
+    }
   }
 
   fireLaser() {
@@ -87,8 +99,8 @@ export default class World extends Phaser.Scene {
       .setImmovable(true);
     laserBeam.body.setSize(1, 1);
 
-    const collider = this.laserBounce ?
-      this.physics.add.collider(laserBeam, this.dropGroup)
+    const collider = this.laserBounce
+      ? this.physics.add.collider(laserBeam, this.dropGroup)
       : this.physics.add.overlap(laserBeam, this.dropGroup, (laser, drop) => {
         drop.explode();
       });
@@ -102,7 +114,6 @@ export default class World extends Phaser.Scene {
           scaleY: 10,
           duration: 1000,
           onComplete: () => {
-            // this.cameras.main.shake(200, 0.02);
             this.cameras.main.shake(800, 0.01);
             laserBeam.setScale(150, 2);
             laserBeam.body.setSize(laserBeam.width, 5);
@@ -191,13 +202,6 @@ export default class World extends Phaser.Scene {
         this.add.text(10, 30, shortcuts, textStyle),
       );
     }
-  }
-
-  setupControlKeys() {
-    if (!this.keyboardHandler) {
-      this.keyboardHandler = new KeyboardHandler(this);
-    }
-    this.input.keyboard.on('keyup', (event) => this.keyboardHandler.handle(event));
   }
 
   createRandomDrop() {

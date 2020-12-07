@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 import WebFontLoader from 'webfontloader';
 
-export default class WebFontFile extends Phaser.Loader.File {
+export default class extends Phaser.Loader.File {
   /**
    * @param {Phaser.Loader.LoaderPlugin} loader
    * @param {string | string[]} fontNames
@@ -20,9 +20,7 @@ export default class WebFontFile extends Phaser.Loader.File {
 
   load() {
     const config = {
-      active: () => {
-        this.loader.nextFile(this, true)
-      },
+      active: () => this.loader.nextFile(this, true),
     };
 
     switch (this.service) {

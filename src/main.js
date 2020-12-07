@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import gameConfig from './gameConfig';
+import gameConfig from './config/gameConfig';
 
 let game;
 
@@ -10,9 +10,10 @@ function newGame() {
 
 function destroyGame() {
   if (!game) return;
-  game.destroy(true);
-  game.runDestroy();
-  game = null;
+  window.location.reload();
+  // game.destroy(true);
+  // game.runDestroy();
+  // game = null;
 }
 
 if (module.hot) {
