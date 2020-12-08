@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import Seedling from './Seedling';
-import { targetShowStatus } from './helpers/constants';
+import { showStatus } from './helpers/constants';
 
 export default class Target extends Phaser.GameObjects.Image {
   constructor(scene, x, y, texture) {
@@ -10,7 +10,7 @@ export default class Target extends Phaser.GameObjects.Image {
       currentMoving: false,
       currentFloating: true,
       hidden: false,
-      showStatus: targetShowStatus.show,
+      showStatus: showStatus.show,
     };
 
     scene.add.existing(this);
@@ -43,10 +43,10 @@ export default class Target extends Phaser.GameObjects.Image {
     this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
       () => {
         if (this.status.currentMoving) {
-          this.move(true, this.status.showStatus !== targetShowStatus.auto);
+          this.move(true, this.status.showStatus !== showStatus.auto);
         }
         if (this.status.currentFloating) {
-          this.float(true, this.status.showStatus !== targetShowStatus.auto);
+          this.float(true, this.status.showStatus !== showStatus.auto);
         }
       });
   }

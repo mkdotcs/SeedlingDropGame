@@ -1,14 +1,13 @@
 import Phaser from 'phaser';
-import tmi from 'tmi.js';
 
-import Drop from './Drop';
 import Target from './Target';
 import LeaderBoard from './LeaderBoard';
-import keyboardHandler from './helpers/keyboardHandler';
 import {
-  keyboardShortcuts, globalCommands, modCommands, targetShowStatus,
+  globalCommands, modCommands, showStatus,
 } from './helpers/constants';
 import globalConfig from './config/globalConfig';
+import TestMode from './TestMode';
+import LiveMode from './LiveMode';
 
 export default class World extends Phaser.Scene {
   constructor() {
@@ -20,14 +19,9 @@ export default class World extends Phaser.Scene {
   create() {
     /* (test: true) in config */
     if (globalConfig.test) {
-      this.add.image(0, 0, 'bg')
-        .setDisplaySize(this.scale.width, this.scale.height)
-        .setOrigin(0)
-        .setTint(0x555555)
-        .setDepth(-3);
-
-      this.initKeyboardShortcuts();
-      this.input.keyboard.on('keyup', (event) => keyboardHandler.handle(this, event));
+      this.testMode = new TestMode(this);
+    } else {
+      this.liveMode = new LiveMode(this);
     }
 
     this.leaderBoard = new LeaderBoard(this);
@@ -39,7 +33,7 @@ export default class World extends Phaser.Scene {
     this.dropGroup = this.add.group({
       removeCallback: () => {
         if (this.dropGroup.countActive() === 0
-          && this.target.status.showStatus === targetShowStatus.auto) {
+          && this.target.status.showStatus === showStatus.auto) {
           this.target.startAutoShowTimer();
         }
       },
@@ -61,7 +55,12 @@ export default class World extends Phaser.Scene {
         }
         const seedlingX = dropX - target.x;
         const score = ((1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100).toFixed(2);
-        const username = World.createRandomUsername();
+        let username;
+        if (globalCommands.test) {
+          username = this.testMode.createRandomUsername();
+        } else {
+          // username = World.createRandomUsername();
+        }
 
         drop.landed(true, dropX, () => target.addSeedling(seedlingX, score, username));
         this.leaderBoard.addHighScore({
@@ -70,25 +69,6 @@ export default class World extends Phaser.Scene {
         });
       }
     });
-
-    if (!globalConfig.test) {
-      // Connect to twitch channel
-      const client = new tmi.Client({
-        options: { debug: true, messagesLogLevel: 'info' },
-        connection: {
-          secure: true,
-          reconnect: true,
-        },
-        channels: [globalConfig.channelName],
-      });
-
-      client.connect();
-
-      client.on('message', async (channel, tags, message, self) => {
-        if (self) return;
-        console.log(tags, message, self);
-      });
-    }
   }
 
   fireLaser() {
@@ -136,85 +116,4 @@ export default class World extends Phaser.Scene {
       ],
     });
   }
-
-  /* ****** for testing only ****** */
-  initKeyboardShortcuts() {
-    /** @type {Phaser.GameObjects.Graphics} keyboardContainer */
-    const [width, height] = [330, 230];
-    const title = this.add.text(10, 10, 'K: Keybaord shortcuts', {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '12px',
-    });
-
-    this.keyboardContainer = this.add.container(0, this.scale.height - height, title)
-      .setSize(width, height)
-      .setDepth(-2);
-    const bg = this.add.rectangle(0, 0,
-      this.keyboardContainer.width, this.keyboardContainer.height, 0x000000, 0.6).setOrigin(0);
-    this.keyboardContainer.addAt(bg, 0);
-
-    this.updateShortcutValue();
-  }
-
-  updateShortcutValue(targetKey, newValue) {
-    const textStyle = {
-      fontFamily: '"Press Start 2P"',
-      fontSize: '11px',
-      lineSpacing: 8,
-      color: '#aaaaaa',
-    };
-
-    const shortcuts = Object.entries(keyboardShortcuts).map(([key, value], index) => {
-      const shortcut = value;
-      if (shortcut.current) {
-        if (key === targetKey) {
-          shortcut.current = newValue;
-          shortcut.text
-            .setText(newValue)
-            .setBackgroundColor('#3e8723');
-        }
-        if (!shortcut.text) {
-          shortcut.text = this.add.text(240, (22) + 21 * index, shortcut.current, textStyle)
-            .setColor('#ffffff')
-            .setBackgroundColor('#424242')
-            .setPadding(3)
-            .setDepth(-1);
-          this.keyboardContainer.add(shortcut.text);
-        }
-        keyboardShortcuts[key] = shortcut;
-      }
-      return `${key}: ${shortcut.description}${shortcut.current ? '.'.repeat(18 - shortcut.description.length) : ''}`;
-    });
-
-    if (targetKey) {
-      const { text } = keyboardShortcuts[targetKey];
-      this.tweens.add({
-        targets: text,
-        alpha: 0.4,
-        duration: 200,
-        ease: Phaser.Math.Easing.Expo.Out,
-        repeat: 2,
-        yoyo: true,
-        onComplete: () => text.setBackgroundColor('#424242').setAlpha(1),
-      });
-    } else {
-      this.keyboardContainer.add(
-        this.add.text(10, 30, shortcuts, textStyle),
-      );
-    }
-  }
-
-  createRandomDrop() {
-    const testImages = this.textures.getTextureKeys().filter((name) => name.startsWith('test'));
-    const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
-    const drop = new Drop(this, Phaser.Math.Between(0, this.scale.width),
-      -100, imageName, this.dropTrail);
-    this.dropGroup.add(drop);
-  }
-
-  static createRandomUsername() {
-    const name = ['abandoned', 'able', 'absolute', 'adorable', 'adventurous', 'academic', 'acceptable', 'acclaimed', 'accomplished', 'accurate', 'aching', 'acidic', 'acrobatic', 'active', 'actual', 'adept', 'admirable', 'admired'];
-    return `${name[Phaser.Math.Between(0, name.length - 1)]}`;
-  }
-  /* ****** for testing only ****** */
 }

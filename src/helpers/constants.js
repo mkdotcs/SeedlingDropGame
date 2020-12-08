@@ -8,7 +8,7 @@ const keyboardShortcuts = {
   T: { description: 'Show Target', options: ['YES', 'NO', 'AUTO'], current: 'YES' },
   M: { description: 'Move target', options: ['YES', 'NO'], current: 'NO' },
   F: { description: 'Float target', options: ['YES', 'NO'], current: 'YES' },
-  B: { description: 'Show Leaderboard', options: ['YES', 'NO'], current: 'YES' },
+  B: { description: 'Show Leaderboard', options: ['YES', 'NO', 'AUTO'], current: 'YES' },
 };
 
 const globalCommands = {
@@ -30,7 +30,7 @@ const modCommands = {
   },
 };
 
-const targetShowStatus = {
+const showStatus = {
   hide: 0,
   show: 1,
   auto: 2,
@@ -40,5 +40,5 @@ export {
   keyboardShortcuts,
   globalCommands,
   modCommands,
-  targetShowStatus,
+  showStatus,
 };

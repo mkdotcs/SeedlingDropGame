@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
+import { showStatus } from './helpers/constants';
 
 export default class {
   constructor(scene) {
+    /** @type {Phaser.Scene} scene */
     this.scene = scene;
 
     /** @type {Phaser.GameObjects.Container} container */
@@ -13,7 +15,6 @@ export default class {
     const SCALE_X = 2.6;
     const SCALE_Y = 1.9;
     this.leaderBoard.setScale(SCALE_X, SCALE_Y);
-    this.visible = true;
 
     Object.assign(this, this.container.getBounds());
 
@@ -43,12 +44,23 @@ export default class {
     highScores.forEach((highScore) => {
       this.addHighScore(highScore);
     });
-    this.showHide();
+    this.updateShowStatus(showStatus.show);
   }
 
-  showHide() {
-    const y = this.visible ? this.showPos.y : this.hidePosY;
-    const scale = this.visible ? 1 : 0;
+  updateShowStatus(status) {
+    this.removeTimer();
+
+    this.showStatus = status;
+    if (status === showStatus.show) {
+      this.showHide(this.showPos.y, 1);
+    } else if (status === showStatus.hide) {
+      this.showHide(this.hidePosY, 0);
+    } else {
+      this.startTimer();
+    }
+  }
+
+  showHide(y, scale) {
     this.scene.tweens.add({
       targets: this.container,
       y,
@@ -60,6 +72,7 @@ export default class {
   }
 
   addHighScore(highScore) {
+    this.removeTimer();
     const { score: newScore, username: newUsername } = highScore;
     const formattedScore = (`   ${newScore}`).slice(-6);
     const text = this.scene.add.text(
@@ -107,6 +120,11 @@ export default class {
       }
     });
 
+    if (this.showStatus === showStatus.auto) {
+      this.showHide(this.showPos.y, 1);
+      this.startTimer();
+    }
+
     // Save high scores to local storage
     localStorage.highScores = JSON.stringify(highScores);
   }
@@ -134,5 +152,22 @@ export default class {
     const removed = this.container.list.splice(2, this.container.list.length - 2);
     removed.forEach((child) => child.destroy());
     localStorage.highScores = [];
+  }
+
+  startTimer() {
+    if (!this.autoHideTimer) {
+      /** @type {Phaser.Time.Clock} autoHideTimer */
+      this.autoHideTimer = this.scene.time.delayedCall(
+        3000,
+        () => this.showHide(this.hidePosY, 0),
+      );
+    }
+  }
+
+  removeTimer() {
+    if (this.autoHideTimer) {
+      this.autoHideTimer.remove();
+      this.autoHideTimer = undefined;
+    }
   }
 }
