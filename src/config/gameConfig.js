@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import Boot from '../Boot';
-import World from '../World';
+import Boot from '../boot';
+import World from '../world';
 
 // Phaser engine's configuration
 
@@ -25,7 +25,7 @@ export default {
   physics: {
     default: 'arcade',
     arcade: {
-      debug: false,
+      debug: true,
       checkCollision: {
         up: false,
         down: false,

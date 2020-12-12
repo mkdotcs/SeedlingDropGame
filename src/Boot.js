@@ -1,15 +1,15 @@
 import Phaser from 'phaser';
 
-import WebFontFile from './helpers/WebFontFile';
+import WebFontFile from './helpers/webFontFile';
 import globalConfig from './config/globalConfig';
 
-export default class Boot extends Phaser.Scene {
+export default class extends Phaser.Scene {
   constructor() {
     super({ key: 'boot' });
   }
 
   preload() {
-    /* Loading indicator */
+    // Loading indicator
     const { width, height } = this.scale;
     const bg = this.add.rectangle(width / 2, height / 2 + 80, 500, 10, 0x666666);
     const bar = this.add.rectangle(bg.x, bg.y, bg.width, bg.height, 0xffffff).setScale(0, 1);
@@ -20,7 +20,7 @@ export default class Boot extends Phaser.Scene {
     })
       .setOrigin(0.5);
 
-    /* Loading assets */
+    // Loading assets
     this.load.atlas('flares', 'assets/flares.png', 'assets/flares.json');
 
     this.load.svg('target', 'assets/target.svg');
@@ -34,7 +34,7 @@ export default class Boot extends Phaser.Scene {
     this.load.setCORS('anonymous');
     this.load.setCORS('Anonymous');
 
-    if (globalConfig.test) {
+    if (globalConfig.testMode) {
       this.load.image('bg', 'assets/bg.jpg');
 
       [

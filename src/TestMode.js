@@ -2,7 +2,8 @@
 import Phaser from 'phaser';
 
 import { keyboardShortcuts, showStatus } from './helpers/constants';
-import Drop from './Drop';
+import globalConfig from './config/globalConfig';
+import Drop from './drop';
 
 export default class {
   constructor(scene) {
@@ -34,10 +35,10 @@ export default class {
       0x000000, 0.6).setOrigin(0);
     this.scene.shortcutsContainer.addAt(shortcutsBackground, 0);
 
-    this.updateShortcutValue();
+    this.initShortcuts();
   }
 
-  updateShortcutValue(targetKey, newValue) {
+  initShortcuts() {
     const textStyle = {
       fontFamily: '"Press Start 2P"',
       fontSize: '11px',
@@ -46,29 +47,34 @@ export default class {
     };
 
     const shortcuts = Object.entries(keyboardShortcuts).map(([key, value], index) => {
-      const shortcut = value;
-      if (shortcut.current) {
-        if (key === targetKey) {
-          shortcut.current = newValue;
-          shortcut.text
-            .setText(newValue)
-            .setBackgroundColor('#3e8723');
-        }
-        if (!shortcut.text) {
-          shortcut.text = this.scene.add.text(240, (22) + 21 * index, shortcut.current, textStyle)
+      const settings = value;
+      const { current, text, description } = settings;
+      if (current) {
+        if (!text) {
+          settings.text = this.scene.add.text(240, (22) + 21 * index, current, textStyle)
             .setColor('#ffffff')
             .setBackgroundColor('#424242')
             .setPadding(3)
             .setDepth(-1);
-          this.scene.shortcutsContainer.add(shortcut.text);
+          this.scene.shortcutsContainer.add(settings.text);
         }
-        keyboardShortcuts[key] = shortcut;
+        keyboardShortcuts[key] = settings;
       }
-      return `${key}: ${shortcut.description}${shortcut.current ? '.'.repeat(18 - shortcut.description.length) : ''}`;
+      return `${key}: ${description}${current ? '.'.repeat(18 - description.length) : ''}`;
     });
 
-    if (targetKey) {
-      const { text } = keyboardShortcuts[targetKey];
+    this.scene.shortcutsContainer.add(
+      this.scene.add.text(10, 30, shortcuts, textStyle),
+    );
+  }
+
+  updateShortcut(key, value) {
+    const settings = keyboardShortcuts[key];
+    if (settings) {
+      const { text } = settings;
+      settings.current = value;
+      text.setText(settings.current)
+        .setBackgroundColor('#3e8723');
       this.scene.tweens.add({
         targets: text,
         alpha: 0.4,
@@ -78,22 +84,17 @@ export default class {
         yoyo: true,
         onComplete: () => text.setBackgroundColor('#424242').setAlpha(1),
       });
-    } else {
-      this.scene.shortcutsContainer.add(
-        this.scene.add.text(10, 30, shortcuts, textStyle),
-      );
     }
   }
 
-  createRandomDrop() {
+  getRandomDrop() {
     const testImages = this.scene.textures.getTextureKeys().filter((name) => name.startsWith('test'));
     const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
-    const drop = new Drop(this.scene, Phaser.Math.Between(0, this.scene.scale.width),
-      -100, imageName, this.scene.dropTrail);
-    this.scene.dropGroup.add(drop);
+    const drop = new Drop(this.scene, imageName,
+      this.getRandomDisplayName(), globalConfig.drop.trail);
   }
 
-  createRandomUsername() {
+  getRandomDisplayName() {
     const name = ['abandoned', 'able', 'absolute', 'adorable', 'adventurous', 'academic', 'acceptable',
       'acclaimed', 'accomplished', 'accurate', 'aching', 'acidic', 'acrobatic', 'active', 'actual', 'adept',
       'admirable', 'admired'];
@@ -101,7 +102,11 @@ export default class {
   }
 
   handleKeyboard(event) {
-    let value;
+    const {
+      target, target: { config: targetConfig },
+      leaderBoard, leaderBoard: { config: leaderBoardConfig },
+    } = this.scene;
+
     switch (event.keyCode) {
       // Show or Hide keyboard shortcuts window
       case Phaser.Input.Keyboard.KeyCodes.K:
@@ -114,11 +119,8 @@ export default class {
 
       // Create a new random drop
       case Phaser.Input.Keyboard.KeyCodes.D:
-        this.createRandomDrop();
-        if (this.scene.target.status.showStatus === showStatus.auto
-          && this.scene.target.status.hidden) {
-          this.scene.target.show();
-        }
+        this.getRandomDrop();
+        target.updateStatus(targetConfig.status);
         break;
 
       // Fire laser
@@ -128,77 +130,66 @@ export default class {
 
       // Remove all scores from leaderboard
       case Phaser.Input.Keyboard.KeyCodes.C:
-        this.scene.leaderBoard.clear();
+        leaderBoard.clear();
         break;
 
       // Remove all seedlings from target
       case Phaser.Input.Keyboard.KeyCodes.R:
-        this.scene.target.clear();
+        target.clear();
         break;
 
-      // Select drop trails [None, Trail1, Trail2, Trail3, Trail4, Trail5, Trail6]
+      // Select drop trail
+      // [0: none, 1: random, 2: drop image, 3: multi colors, 4: red, 5: blue, 6: green, 7: yellow]
       case Phaser.Input.Keyboard.KeyCodes.A:
-        this.scene.dropTrail = this.scene.dropTrail + 1 > 6 ? 0 : this.scene.dropTrail + 1;
-        this.updateShortcutValue(event.key.toUpperCase(), this.scene.dropTrail === 0 ? 'None' : `Trail${this.scene.dropTrail}`);
+        globalConfig.drop.trail = globalConfig.drop.trail + 1 > 7 ? 0 : globalConfig.drop.trail + 1;
+        this.updateShortcut(event.key.toUpperCase(), globalConfig.drop.trail);
         break;
 
-      // Select how laser damages the drops [Bounce or Destroy]
+      // Select how laser damages the drops [0: Bounce, 1: Destroy]
       case Phaser.Input.Keyboard.KeyCodes.S:
-        this.scene.laserBounce = !this.scene.laserBounce;
-        this.updateShortcutValue(event.key.toUpperCase(), this.scene.laserBounce ? 'Bounce' : 'Destroy');
+        globalConfig.laserCollision = 1 - globalConfig.laserCollision;
+        this.updateShortcut(event.key.toUpperCase(), globalConfig.laserCollision);
         break;
 
-      /* Select target's show status
-        [Show, Auto Show (target will only show if there is at least one drop), Hide] */
+      // Select target's show status
+      // [Show, Auto (target will only show if there is at least one drop), or Hide]
       case Phaser.Input.Keyboard.KeyCodes.T:
-        if (this.scene.target.status.showStatus === showStatus.hide) {
-          this.updateShortcutValue(event.key.toUpperCase(), 'YES');
-          this.scene.target.status.showStatus = showStatus.show;
-          this.scene.target.show();
-        } else if (this.scene.target.status.showStatus === showStatus.show) {
-          this.updateShortcutValue(event.key.toUpperCase(), 'AUTO');
-          this.scene.target.status.showStatus = showStatus.auto;
-          if (this.scene.dropGroup.countActive() === 0) {
-            this.scene.target.hide();
-          }
+        if (targetConfig.status === showStatus.show) {
+          target.updateStatus(showStatus.auto);
+        } else if (targetConfig.status === showStatus.auto) {
+          target.updateStatus(showStatus.hide);
         } else {
-          this.updateShortcutValue(event.key.toUpperCase(), 'NO');
-          this.scene.target.status.showStatus = showStatus.hide;
-          this.scene.target.hide();
+          target.updateStatus(showStatus.show);
         }
+        this.updateShortcut(event.key.toUpperCase(), targetConfig.status);
         break;
 
       // Turn On or Off target movement
       case Phaser.Input.Keyboard.KeyCodes.M:
-        this.scene.target.move(!this.scene.target.status.currentMoving);
-        this.updateShortcutValue(event.key.toUpperCase(), this.scene.target.status.currentMoving ? 'YES' : 'NO');
+        target.move(!targetConfig.move);
+        this.updateShortcut(event.key.toUpperCase(), +targetConfig.move);
         break;
 
       // Turn On or Off target floating
       case Phaser.Input.Keyboard.KeyCodes.F:
-        this.scene.target.float(!this.scene.target.status.currentFloating);
-        this.updateShortcutValue(event.key.toUpperCase(), this.scene.target.status.currentFloating ? 'YES' : 'NO');
+        target.float(!targetConfig.float);
+        this.updateShortcut(event.key.toUpperCase(), +targetConfig.float);
         break;
 
-      // Show, Auto Show, or Hide leaderboard
+      // Show, Auto, or Hide leaderboard
       case Phaser.Input.Keyboard.KeyCodes.B:
-        if (this.scene.leaderBoard.showStatus === showStatus.hide) {
-          value = 'SHOW';
-          this.scene.leaderBoard.updateShowStatus(showStatus.show);
-        } else if (this.scene.leaderBoard.showStatus === showStatus.show) {
-          value = 'AUTO';
-          this.scene.leaderBoard.updateShowStatus(showStatus.auto);
+        if (leaderBoardConfig.status === showStatus.show) {
+          leaderBoard.updateStatus(showStatus.auto);
+        } else if (leaderBoardConfig.status === showStatus.auto) {
+          leaderBoard.updateStatus(showStatus.hide);
         } else {
-          value = 'HIDE';
-          this.scene.leaderBoard.updateShowStatus(showStatus.hide);
+          leaderBoard.updateStatus(showStatus.show);
         }
+        this.updateShortcut(event.key.toUpperCase(), leaderBoardConfig.status);
         break;
 
       default:
         break;
-    }
-    if (value) {
-      this.updateShortcutValue(event.key.toUpperCase(), value);
     }
   }
 }

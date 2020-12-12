@@ -1,18 +1,26 @@
 import Phaser from 'phaser';
-import Seedling from './Seedling';
+import Seedling from './seedling';
+import globalConfig from './config/globalConfig';
 import { showStatus } from './helpers/constants';
 
-export default class Target extends Phaser.GameObjects.Image {
+const defaultConfig = {
+  status: 0, // 0: show, 1: auto, 2: hide
+  autoTimeout: 90000, // milliseconds
+};
+
+export default class extends Phaser.GameObjects.Image {
   constructor(scene, x, y, texture) {
     super(scene, x, y, 'target');
 
-    this.status = {
-      currentMoving: false,
-      currentFloating: true,
-      hidden: false,
-      showStatus: showStatus.show,
-    };
+    // load target this.configuration and set defaults
+    this.config = globalConfig.target;
+    this.config.status = this.config.status
+      && this.config.status < Object.keys(showStatus).length
+      ? this.config.status : defaultConfig.status;
+    this.config.autoTimeout = this.config.autoTimeout || defaultConfig.autoTimeout;
+    this.config.hidden = false;
 
+    // scene initialization
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -33,20 +41,37 @@ export default class Target extends Phaser.GameObjects.Image {
 
     this.y = scene.scale.height + this.displayHeight;
     this.center('x');
-    this.show();
+    this.updateStatus(this.config.status);
+  }
+
+  updateStatus(status) {
+    this.removeTimer();
+
+    this.config.status = status;
+    if (status === showStatus.show) {
+      this.show();
+    } else if (status === showStatus.auto) {
+      if (this.scene.dropGroup.countActive() === 0) {
+        this.startAutoTimer();
+      } else {
+        this.show();
+      }
+    } else {
+      this.hide();
+    }
   }
 
   show() {
     this.removeTimer();
 
-    this.status.hidden = false;
+    this.config.hidden = false;
     this.updateYPos(this.scene.scale.height - this.displayHeight / 4,
       () => {
-        if (this.status.currentMoving) {
-          this.move(true, this.status.showStatus !== showStatus.auto);
+        if (this.config.move) {
+          this.move(true, this.config.status !== showStatus.auto);
         }
-        if (this.status.currentFloating) {
-          this.float(true, this.status.showStatus !== showStatus.auto);
+        if (this.config.float) {
+          this.float(true, this.config.status !== showStatus.auto);
         }
       });
   }
@@ -54,20 +79,25 @@ export default class Target extends Phaser.GameObjects.Image {
   hide() {
     this.removeTimer();
 
-    this.status.hidden = true;
+    this.config.hidden = true;
     this.move(false, false);
     this.float(false, false);
     this.updateYPos(this.scene.scale.height + 300);
   }
 
-  startAutoShowTimer() {
+  startAutoTimer() {
     if (!this.autoTimer) {
-      this.autoTimer = this.scene.time.addEvent({
-        delay: 3000,
-        callback: () => {
-          this.hide();
-        },
-      });
+      this.autoTimer = this.scene.time.delayedCall(
+        this.config.autoTimeout,
+        () => this.hide(),
+      );
+    }
+  }
+
+  removeTimer() {
+    if (this.autoTimer) {
+      this.autoTimer.remove();
+      this.autoTimer = undefined;
     }
   }
 
@@ -88,9 +118,11 @@ export default class Target extends Phaser.GameObjects.Image {
     const { width: sceneWidth, height: sceneHeight } = this.scene.scale;
     let x = sceneWidth / 2;
     let y = sceneHeight - this.displayHeight / 4;
-    if (dir) {
-      x = dir === 'y' ? this.x : x;
-      y = dir === 'x' || this.status.hidden ? this.y : y;
+
+    if (dir === 'x') {
+      y = this.config.hidden ? this.y : y;
+    } else if (dir === 'y') {
+      x = this.x;
     }
 
     this.scene.tweens.add({
@@ -103,8 +135,8 @@ export default class Target extends Phaser.GameObjects.Image {
     return { x, y };
   }
 
-  addSeedling(x, score, username) {
-    const seedling = new Seedling(this.scene, x, -30, score, username);
+  addSeedling(x, score, displayName) {
+    const seedling = new Seedling(this.scene, x, -30, score, displayName);
     this.container.add(seedling);
   }
 
@@ -126,14 +158,16 @@ export default class Target extends Phaser.GameObjects.Image {
     }
 
     if (update) {
-      this.status.currentFloating = isStart;
+      this.config.float = isStart;
     }
 
-    if (isStart && !this.status.hidden) {
+    if (isStart && !this.config.hidden) {
       this.floatTween.resume();
     } else {
       this.floatTween.pause();
-      this.center('y', true);
+      if (!this.config.hidden) {
+        this.center('y', true);
+      }
     }
   }
 
@@ -141,7 +175,19 @@ export default class Target extends Phaser.GameObjects.Image {
     if (!this.moveTimer) {
       this.moveTimer = this.scene.time.addEvent({
         delay: 10000,
-        callback: this.move,
+        startAt: 10000,
+        callback: () => {
+          const rnd = Phaser.Math.RND;
+          const newX = rnd.between(this.displayWidth + 5,
+            this.scene.scale.width - this.displayWidth - 5);
+
+          this.scene.tweens.add({
+            targets: [this, this.container],
+            x: newX,
+            duration: 1000,
+            ease: Phaser.Math.Easing.Sine.InOut,
+          });
+        },
         callbackScope: this,
         loop: true,
         paused: true,
@@ -149,30 +195,13 @@ export default class Target extends Phaser.GameObjects.Image {
     }
 
     if (update) {
-      this.status.currentMoving = isStart;
+      this.config.move = isStart;
     }
     if (isStart) {
-      const rnd = Phaser.Math.RND;
-      const newX = rnd.between(this.displayWidth + 5,
-        this.scene.scale.width - this.displayWidth - 5);
-
-      this.scene.tweens.add({
-        targets: [this, this.container],
-        x: newX,
-        duration: 1000,
-        ease: Phaser.Math.Easing.Sine.InOut,
-      });
       this.moveTimer.paused = false;
     } else {
       this.moveTimer.paused = true;
       this.center('x', true);
-    }
-  }
-
-  removeTimer() {
-    if (this.autoTimer) {
-      this.autoTimer.remove();
-      this.autoTimer = undefined;
     }
   }
 }

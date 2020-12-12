@@ -1,19 +1,34 @@
 import Phaser from 'phaser';
+import globalConfig from './config/globalConfig';
 import { showStatus } from './helpers/constants';
+
+const defaultConfig = {
+  status: 0, // 0: show, 1: auto, 2: hide
+  autoTimeout: 90000, // milliseconds
+};
+
+const SCALE_X = 2.6;
+const SCALE_Y = 1.9;
 
 export default class {
   constructor(scene) {
     /** @type {Phaser.Scene} scene */
     this.scene = scene;
 
+    // load leaderboard configuration and set defaults
+    this.config = globalConfig.leaderBoard;
+    this.config.status = this.config.status
+      && this.config.status < Object.keys(showStatus).length
+      ? this.config.status : defaultConfig.status;
+    this.config.autoTimeout = this.config.autoTimeout || defaultConfig.autoTimeout;
+
+    // scene initialization
     /** @type {Phaser.GameObjects.Container} container */
     this.container = scene.add.container(0, 0);
     this.leaderBoard = scene.add.image(0, 0, 'board');
 
     this.container.add(this.leaderBoard);
 
-    const SCALE_X = 2.6;
-    const SCALE_Y = 1.9;
     this.leaderBoard.setScale(SCALE_X, SCALE_Y);
 
     Object.assign(this, this.container.getBounds());
@@ -44,40 +59,42 @@ export default class {
     highScores.forEach((highScore) => {
       this.addHighScore(highScore);
     });
-    this.updateShowStatus(showStatus.show);
+
+    this.updateStatus(this.config.status);
   }
 
-  updateShowStatus(status) {
+  updateStatus(status) {
     this.removeTimer();
 
-    this.showStatus = status;
+    this.config.status = status;
     if (status === showStatus.show) {
-      this.showHide(this.showPos.y, 1);
+      this.update(this.showPos.y, 1);
     } else if (status === showStatus.hide) {
-      this.showHide(this.hidePosY, 0);
+      this.update(this.hidePosY, 0);
     } else {
-      this.startTimer();
+      this.startAutoTimer();
     }
   }
 
-  showHide(y, scale) {
+  update(y, scale) {
     this.scene.tweens.add({
       targets: this.container,
       y,
       scale,
       duration: 600,
+      delay: 300,
       ease: Phaser.Math.Easing.Back.Out,
-      onComplete: () => { this.visible = !this.visible; },
+      // onComplete: () => { this.visible = !this.visible; },
     });
   }
 
   addHighScore(highScore) {
     this.removeTimer();
-    const { score: newScore, username: newUsername } = highScore;
+    const { score: newScore, displayName: newDisplayName } = highScore;
     const formattedScore = (`   ${newScore}`).slice(-6);
     const text = this.scene.add.text(
       -this.width / 2 + 10, this.height,
-      `${formattedScore} ${newUsername}`, {
+      `${formattedScore} ${newDisplayName}`, {
         fontFamily: '"Press Start 2P"',
         fontSize: '12px',
         fixedWidth: this.width - 24,
@@ -94,7 +111,7 @@ export default class {
     // Filter the list and remove duplicates for the same user
     this.container.list = this.container.list.reduce((unique, current, index) => {
       // eslint-disable-next-line max-len
-      const found = unique.findIndex((e) => (e.data ? e.data.values.username === current.data.values.username : false)) > -1;
+      const found = unique.findIndex((e) => (e.data ? e.data.values.displayName === current.data.values.displayName : false)) > -1;
       if (found) {
         this.moveText(index, 0);
         return unique;
@@ -111,8 +128,8 @@ export default class {
     const highScores = [];
     this.container.list.forEach((item, index) => {
       if (item.data) {
-        const { data: { values: { score, username } } } = item;
-        highScores.push({ score, username });
+        const { data: { values: { score, displayName } } } = item;
+        highScores.push({ score, displayName });
         const y = (-this.height / 2 + 35) + (index - 2) * 20;
         if (item.y !== y) {
           this.moveText(index, y);
@@ -120,9 +137,9 @@ export default class {
       }
     });
 
-    if (this.showStatus === showStatus.auto) {
-      this.showHide(this.showPos.y, 1);
-      this.startTimer();
+    if (this.config.status === showStatus.auto) {
+      this.update(this.showPos.y, 1);
+      this.startAutoTimer();
     }
 
     // Save high scores to local storage
@@ -133,11 +150,6 @@ export default class {
     const scoreText = this.container.list[index];
 
     if (scoreText) {
-      if (this.visible) {
-        scoreText.y = toY;
-        return;
-      }
-
       this.scene.tweens.add({
         targets: scoreText,
         y: toY,
@@ -154,20 +166,20 @@ export default class {
     localStorage.highScores = [];
   }
 
-  startTimer() {
-    if (!this.autoHideTimer) {
-      /** @type {Phaser.Time.Clock} autoHideTimer */
-      this.autoHideTimer = this.scene.time.delayedCall(
-        3000,
-        () => this.showHide(this.hidePosY, 0),
+  startAutoTimer() {
+    if (!this.autoTimer) {
+      /** @type {Phaser.Time.Clock} autoTimer */
+      this.autoTimer = this.scene.time.delayedCall(
+        this.config.autoTimeout,
+        () => this.update(this.hidePosY, 0),
       );
     }
   }
 
   removeTimer() {
-    if (this.autoHideTimer) {
-      this.autoHideTimer.remove();
-      this.autoHideTimer = undefined;
+    if (this.autoTimer) {
+      this.autoTimer.remove();
+      this.autoTimer = undefined;
     }
   }
 }

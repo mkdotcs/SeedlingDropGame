@@ -1,7 +1,13 @@
 import Phaser from 'phaser';
 
-export default class Seedling extends Phaser.GameObjects.Image {
-  constructor(scene, x, y, score, username) {
+import globalConfig from './config/globalConfig';
+
+const defaultConfig = {
+  timout: 1000, // milliseconds
+};
+
+export default class extends Phaser.GameObjects.Image {
+  constructor(scene, x, y, score, displayName) {
     let textureName = 'seedling';
     let height = score * 0.9;
 
@@ -12,13 +18,18 @@ export default class Seedling extends Phaser.GameObjects.Image {
 
     super(scene, x, y, textureName);
 
+    // load drop configuration and set defaults
+    this.config = globalConfig.drop;
+    this.config.timout = this.config.timout || defaultConfig.timout;
+
+    // scene initialization
     scene.add.existing(this);
 
     this.displayHeight = 0;
     this.scaleX = this.scaleY;
     this.setOrigin(0.5, 1);
 
-    this.displayUsername = scene.add.text(this.x, y, username,{
+    this.displayName = scene.add.text(this.x, y, displayName, {
       fontFamily: '"Press Start 2P"',
       fontSize: 16 * ((score / 100) * 1.1),
       color: '#ffffff',
@@ -27,7 +38,7 @@ export default class Seedling extends Phaser.GameObjects.Image {
       .setStroke('#de77ae', 16)
       .setShadow(2, 2, '#333333', 2, true, false);
 
-    /* show seedling */
+    // show seedling
     scene.tweens.addCounter({
       from: 0,
       to: height,
@@ -36,21 +47,21 @@ export default class Seedling extends Phaser.GameObjects.Image {
       repeat: 0,
       yoyo: false,
       onStart: () => {
-        this.parentContainer.add(this.displayUsername);
+        this.parentContainer.add(this.displayName);
       },
       onUpdate: (tween) => {
         this.displayHeight = tween.getValue();
         this.scaleX = this.scaleY;
-        this.displayUsername.y = this.y - tween.getValue() - 10;
+        this.displayName.y = this.y - tween.getValue() - 10;
       },
     });
 
-    /* hide username only after 1 sec. */
+    // hide user name only
     scene.time.addEvent({
-      delay: 1000,
+      delay: this.config.timout,
       callback: () => {
         scene.tweens.add({
-          targets: this.displayUsername,
+          targets: this.displayName,
           alpha: { from: 1, to: 0 },
           scaleX: 0,
           scaleY: 0,

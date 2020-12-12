@@ -1,14 +1,38 @@
 import Phaser from 'phaser';
 
+import globalConfig from './config/globalConfig';
+
+const defaultConfig = {
+  scale: 1, // 0.5: half size, 1: actual size, 2: double size, etc
+  timeout: 10000, // milliseconds
+};
+
 const colors = ['red', 'blue', 'green', 'yellow'];
 
-export default class Drop extends Phaser.GameObjects.Sprite {
-  constructor(scene, x, y, texture, trail) {
-    super(scene, x, y, texture);
+export default class extends Phaser.GameObjects.Sprite {
+  /** @param {Phaser.Scene} scene */
+  constructor(scene, texture, displayName, trail) {
+    super(scene, 0, 0, texture);
 
+    // load drop configuration and set defaults
+    this.config = globalConfig.drop;
+    this.config.hideTimeout = this.config.hideTimeout || defaultConfig.timeout;
+    this.config.scale = this.config.scale || 1;
+
+    // scene initialization
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
+    scene.dropGroup.add(this);
+
+    this.displayName = displayName;
+    this.setScale(this.config.scale);
+    if (this.displayWidth > 56) {
+      this.displayWidth = 56;
+      this.scaleY = this.scaleX;
+    }
+
+    this.setPosition(Phaser.Math.Between(0, this.scene.scale.width), -100);
     this.body.onWorldBounds = true;
     this.body
       .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
@@ -32,7 +56,8 @@ export default class Drop extends Phaser.GameObjects.Sprite {
       },
     });
 
-    if (trail === 1) {
+    const selectedTrail = trail === 1 ? Phaser.Math.Between(2, 7) : trail;
+    if (selectedTrail === 2) {
       this.trail = scene.add.particles(texture).createEmitter({
         speed: 0,
         scale: { start: 1, end: 0 },
@@ -41,9 +66,9 @@ export default class Drop extends Phaser.GameObjects.Sprite {
         lifespan: 1000,
         follow: this,
       });
-    } else if (trail > 1) {
+    } else if (selectedTrail > 2) {
       this.trail = scene.add.particles('flares').createEmitter({
-        frame: trail === 2 ? colors : colors[trail - 3],
+        frame: selectedTrail === 3 ? colors : colors[selectedTrail - 4],
         speed: 50,
         lifespan: {
           onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
@@ -137,7 +162,7 @@ export default class Drop extends Phaser.GameObjects.Sprite {
         scaleY: 0,
         angle: -360,
         ease: Phaser.Math.Easing.Cubic.Out,
-        delay: 5000, // config.dropTimeout
+        delay: this.config.hideTimeout,
         duration: 1000,
         repeat: 0,
         yoyo: false,
