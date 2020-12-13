@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
-import gameConfig from './config/gameConfig';
+import phaserConfig from './config/phaserConfig';
 
 let game;
 
 function newGame() {
   if (game) return;
-  game = new Phaser.Game(gameConfig);
+  game = new Phaser.Game(phaserConfig);
 }
 
 function destroyGame() {

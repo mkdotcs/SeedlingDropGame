@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 
-import WebFontFile from './helpers/webFontFile';
-import globalConfig from './config/globalConfig';
+import WebFontFile from './common/webFontFile';
+import appConfig from './config/appConfig';
 
 export default class extends Phaser.Scene {
   constructor() {
@@ -34,7 +34,7 @@ export default class extends Phaser.Scene {
     this.load.setCORS('anonymous');
     this.load.setCORS('Anonymous');
 
-    if (globalConfig.testMode) {
+    if (appConfig.testMode) {
       this.load.image('bg', 'assets/bg.jpg');
 
       [

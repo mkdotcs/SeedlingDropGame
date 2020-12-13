@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import globalConfig from './config/globalConfig';
-import { showStatus } from './helpers/constants';
+import appConfig from './config/appConfig';
+import { showStatus } from './common/constants';
 
 const defaultConfig = {
   status: 0, // 0: show, 1: auto, 2: hide
@@ -16,7 +16,7 @@ export default class {
     this.scene = scene;
 
     // load leaderboard configuration and set defaults
-    this.config = globalConfig.leaderBoard;
+    this.config = appConfig.leaderBoard;
     this.config.status = this.config.status
       && this.config.status < Object.keys(showStatus).length
       ? this.config.status : defaultConfig.status;

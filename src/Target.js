@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import Seedling from './seedling';
-import globalConfig from './config/globalConfig';
-import { showStatus } from './helpers/constants';
+import appConfig from './config/appConfig';
+import { showStatus } from './common/constants';
 
 const defaultConfig = {
   status: 0, // 0: show, 1: auto, 2: hide
@@ -13,7 +13,7 @@ export default class extends Phaser.GameObjects.Image {
     super(scene, x, y, 'target');
 
     // load target this.configuration and set defaults
-    this.config = globalConfig.target;
+    this.config = appConfig.target;
     this.config.status = this.config.status
       && this.config.status < Object.keys(showStatus).length
       ? this.config.status : defaultConfig.status;

@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import globalConfig from '../config/globalConfig';
+import appConfig from '../config/appConfig';
 
 const globalCommands = {
   drop: [],
@@ -19,6 +19,11 @@ const modCommands = {
   },
 };
 
+const laserCollisions = {
+  bounce: 0,
+  destroy: 1,
+};
+
 const showStatus = {
   show: 0,
   auto: 1,
@@ -33,42 +38,42 @@ const keyboardShortcuts = {
   A: {
     description: 'Drop trail',
     options: ['None', 'Random', 'Image', 'Multi', 'Red', 'Blue', 'Green', 'Yellow'],
-    currentValue: globalConfig.drop.trail ?? 1,
+    currentValue: appConfig.drop.trail ?? 1,
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
   S: {
     description: 'Laser collision',
     options: ['Bounce', 'Destroy'],
-    currentValue: globalConfig.laserCollision ?? 0,
+    currentValue: appConfig.laserCollision ?? 0,
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
   T: {
     description: 'Target',
     options: ['Show', 'Auto', 'Hide'],
-    currentValue: globalConfig.target.status ?? showStatus.show,
+    currentValue: appConfig.target.status ?? showStatus.show,
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
   M: {
     description: 'Move target',
     options: ['NO', 'YES'],
-    currentValue: +(globalConfig.target.move ?? false),
+    currentValue: +(appConfig.target.move ?? false),
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
   F: {
     description: 'Float target',
     options: ['NO', 'YES'],
-    currentValue: +(globalConfig.target.float ?? true),
+    currentValue: +(appConfig.target.float ?? true),
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
   B: {
     description: 'Leaderboard',
     options: ['Show', 'Auto', 'Hide'],
-    currentValue: globalConfig.leaderBoard.status ?? showStatus.show,
+    currentValue: appConfig.leaderBoard.status ?? showStatus.show,
     get current() { return this.options[this.currentValue]; },
     set current(value) { this.currentValue = value; },
   },
@@ -77,6 +82,7 @@ const keyboardShortcuts = {
 export {
   globalCommands,
   modCommands,
+  laserCollisions,
   showStatus,
   keyboardShortcuts,
 };

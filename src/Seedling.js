@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import globalConfig from './config/globalConfig';
+import appConfig from './config/appConfig';
 
 const defaultConfig = {
   timout: 1000, // milliseconds
@@ -19,7 +19,7 @@ export default class extends Phaser.GameObjects.Image {
     super(scene, x, y, textureName);
 
     // load drop configuration and set defaults
-    this.config = globalConfig.drop;
+    this.config = appConfig.drop;
     this.config.timout = this.config.timout || defaultConfig.timout;
 
     // scene initialization

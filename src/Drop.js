@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 
-import globalConfig from './config/globalConfig';
+import appConfig from './config/appConfig';
 
 const defaultConfig = {
   scale: 1, // 0.5: half size, 1: actual size, 2: double size, etc
@@ -15,7 +15,7 @@ export default class extends Phaser.GameObjects.Sprite {
     super(scene, 0, 0, texture);
 
     // load drop configuration and set defaults
-    this.config = globalConfig.drop;
+    this.config = appConfig.drop;
     this.config.hideTimeout = this.config.hideTimeout || defaultConfig.timeout;
     this.config.scale = this.config.scale || 1;
 

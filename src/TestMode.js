@@ -1,8 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import Phaser from 'phaser';
 
-import { keyboardShortcuts, showStatus } from './helpers/constants';
-import globalConfig from './config/globalConfig';
+import { keyboardShortcuts, showStatus } from './common/constants';
+import appConfig from './config/appConfig';
 import Drop from './drop';
 
 export default class {
@@ -91,7 +91,7 @@ export default class {
     const testImages = this.scene.textures.getTextureKeys().filter((name) => name.startsWith('test'));
     const imageName = testImages[Phaser.Math.Between(0, testImages.length - 1)];
     const drop = new Drop(this.scene, imageName,
-      this.getRandomDisplayName(), globalConfig.drop.trail);
+      this.getRandomDisplayName(), appConfig.drop.trail);
   }
 
   getRandomDisplayName() {
@@ -141,14 +141,14 @@ export default class {
       // Select drop trail
       // [0: none, 1: random, 2: drop image, 3: multi colors, 4: red, 5: blue, 6: green, 7: yellow]
       case Phaser.Input.Keyboard.KeyCodes.A:
-        globalConfig.drop.trail = globalConfig.drop.trail + 1 > 7 ? 0 : globalConfig.drop.trail + 1;
-        this.updateShortcut(event.key.toUpperCase(), globalConfig.drop.trail);
+        appConfig.drop.trail = appConfig.drop.trail + 1 > 7 ? 0 : appConfig.drop.trail + 1;
+        this.updateShortcut(event.key.toUpperCase(), appConfig.drop.trail);
         break;
 
       // Select how laser damages the drops [0: Bounce, 1: Destroy]
       case Phaser.Input.Keyboard.KeyCodes.S:
-        globalConfig.laserCollision = 1 - globalConfig.laserCollision;
-        this.updateShortcut(event.key.toUpperCase(), globalConfig.laserCollision);
+        appConfig.laserCollision = 1 - appConfig.laserCollision;
+        this.updateShortcut(event.key.toUpperCase(), appConfig.laserCollision);
         break;
 
       // Select target's show status

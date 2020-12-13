@@ -3,8 +3,8 @@ import Phaser from 'phaser';
 import twemoji from 'twemoji';
 import tmi from 'tmi.js';
 
-import globalConfig from './config/globalConfig';
-import { globalCommands, modCommands } from './helpers/constants';
+import appConfig from './config/appConfig';
+import { globalCommands, modCommands } from './common/constants';
 import Drop from './drop';
 
 const TWITCH_API = 'https://static-cdn.jtvnw.net/emoticons/v1/{id}/2.0';
@@ -15,7 +15,7 @@ export default class {
     this.scene = scene;
 
     // Load channel configuration
-    const { channel: channelConfig } = globalConfig;
+    const { channel: channelConfig } = appConfig;
 
     // keep history of drops to control how often user can drop again
     this.dropHistory = {};
@@ -69,7 +69,7 @@ export default class {
             if (args[0] && options.includes(args[0])) {
               value = +args[0];
             }
-            const { drop } = globalConfig;
+            const { drop } = appConfig;
             drop.trail = value;
             break;
           }
@@ -81,7 +81,7 @@ export default class {
                 value = args[0] > 1 && args[0] < 6 ? args[0] : 1;
               } else {
                 const index = options.indexOf(args[0]);
-                globalConfig.laserCollision = index === -1 ? globalConfig.laserCollision : index;
+                appConfig.laserCollision = index === -1 ? appConfig.laserCollision : index;
               }
             }
 
@@ -96,7 +96,7 @@ export default class {
 
           case 'tg':
           case 'target': {
-            const { target: targetConfig } = globalConfig;
+            const { target: targetConfig } = appConfig;
             const { target } = this.scene;
 
             if (args) {
@@ -192,7 +192,7 @@ export default class {
 
     this.dropHistory[displayName] = Date.now();
 
-    const drop = new Drop(this.scene, imageId, displayName, globalConfig.drop.trail);
+    const drop = new Drop(this.scene, imageId, displayName, appConfig.drop.trail);
   }
 
   loadImage(id, url) {
