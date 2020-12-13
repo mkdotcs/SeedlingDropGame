@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import cheerio from 'cheerio';
 
 import Target from './target';
 import LeaderBoard from './leaderBoard';
@@ -15,6 +16,8 @@ export default class extends Phaser.Scene {
   }
 
   create() {
+    this.getProfileImageUrl('mrbencoder');
+
     // setup game mode
     let mode;
     if (appConfig.testMode) {
@@ -140,5 +143,18 @@ export default class extends Phaser.Scene {
 
   updateConfig() {
     this.appConfig.drop.trail = 7;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async getProfileImageUrl(username) {
+    const url = `https://cors-anywhere.herokuapp.com/https://www.twitch.tv/${username}`;
+    const response = await fetch(url, {
+      'origin', 'x-requested-with',
+    });
+    const html = await response.text();
+    const $ = cheerio.load(html);
+    const result = $('.tw-avatar--size-64');
+    console.log(html);
+    console.log(result);
   }
 }

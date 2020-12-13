@@ -12,6 +12,7 @@
   "author": "Mohd. Ben Huwaireb (MrBenCoder) <huwaireb@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
     "phaser": "^3.24.1",
     "tmi.js": "^1.5.0",
     "twemoji": "^13.0.1",
