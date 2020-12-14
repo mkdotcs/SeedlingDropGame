@@ -9,6 +9,7 @@ const defaultConfig = {
 };
 
 export default class extends Phaser.GameObjects.Image {
+  /** @param {Phaser.Scene} scene */
   constructor(scene, x, y, texture) {
     super(scene, x, y, 'target');
 
@@ -36,7 +37,7 @@ export default class extends Phaser.GameObjects.Image {
     );
 
     /** @type {Phaser.GameObjects.Container} container */
-    this.container = scene.add.container(0, 0 + 5)
+    this.container = scene.add.container(0, 0)
       .setDepth(-1);
 
     this.y = scene.scale.height + this.displayHeight;
@@ -103,9 +104,10 @@ export default class extends Phaser.GameObjects.Image {
 
   updateYPos(y, callback) {
     this.scene.tweens.add({
-      targets: [this, this.container],
+      targets: this,
       y,
       duration: 500,
+      onUpdate: () => { this.container.y = y - 10; },
       onComplete: () => {
         if (callback) {
           callback();

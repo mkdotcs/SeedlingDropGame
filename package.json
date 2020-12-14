@@ -5,8 +5,8 @@
   "main": "src/index.html",
   "scripts": {
     "start": "parcel src/index.html -p 1234 --no-cache",
-    "build": "parcel build src/index.html --out-dir dist --log-level 4",
-    "clean": "rm -v dist/*"
+    "build": "parcel build src/index.html --out-dir dist",
+    "clean": "rm -rf dist/*"
   },
   "keywords": [],
   "author": "Mohd. Ben Huwaireb (MrBenCoder) <huwaireb@gmail.com>",

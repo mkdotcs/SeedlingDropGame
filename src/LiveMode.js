@@ -15,7 +15,7 @@ export default class {
     this.scene = scene;
 
     // Load channel configuration
-    const { channel: channelConfig } = appConfig;
+    const { channel: channelConfig, drop: { delay: dropDelay } } = appConfig;
 
     // keep history of drops to control how often user can drop again
     this.dropHistory = {};
@@ -57,7 +57,7 @@ export default class {
           case 'drop': {
             const displayName = tags['display-name'] || tags.username;
             const lastDropTime = this.dropHistory[displayName];
-            // if (lastDropTime && Date.now() - lastDropTime < 10000) return;
+            if (lastDropTime && Date.now() - lastDropTime < dropDelay) return;
 
             this.drop(tags, args, displayName);
             break;

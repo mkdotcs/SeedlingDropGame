@@ -26,6 +26,8 @@ export default class extends Phaser.Scene {
     this.load.svg('target', 'assets/target.svg');
     this.load.svg('seedling', 'assets/seedling.svg', { scale: 0.5 });
     this.load.svg('tree', 'assets/tree.svg');
+    this.load.svg('whiteFlower', 'assets/white-flower.svg');
+    this.load.svg('blueFlower', 'assets/blue-flower.svg');
     this.load.svg('board', 'assets/board.svg');
 
     this.load.addFile(new WebFontFile(this.load, 'Press Start 2P'));

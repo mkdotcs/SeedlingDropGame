@@ -32,11 +32,14 @@ export default class extends Phaser.GameObjects.Sprite {
       this.scaleY = this.scaleX;
     }
 
-    this.setPosition(Phaser.Math.Between(0, this.scene.scale.width), -100);
+    // this.setPosition(Phaser.Math.Between(0, this.scene.scale.width), -100);
+    // this.setPosition(this.scene.scale.width / 2, -100);
+    this.setPosition(100 + Math.floor(Math.random() * (scene.scale.width - 2 * 100)), -100 - (Math.random() * 200));
     this.body.onWorldBounds = true;
     this.body
-      .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
-      // .setVelocity(0, Phaser.Math.Between(70, 250))
+      .setVelocity((Math.random() * 4 + 2) * (Math.random() > 0.5 ? -1 : 1), Math.random() * 2 + 0.5)
+      // .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
+      // .setVelocity(0, 300)
       .setBounce(1)
       .setCollideWorldBounds(true);
 

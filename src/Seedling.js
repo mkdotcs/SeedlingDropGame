@@ -9,11 +9,14 @@ const defaultConfig = {
 export default class extends Phaser.GameObjects.Image {
   constructor(scene, x, y, score, displayName) {
     let textureName = 'seedling';
-    let height = score * 0.9;
+    let height = score * 0.7;
 
-    if (score > 90) {
+    if (score === 100) {
       textureName = 'tree';
-      height = score * 1.1;
+      height = score * 1.2;
+    } else if (score > 80) {
+      textureName = Math.random() > 0.5 ? 'whiteFlower' : 'blueFlower';
+      height = score;
     }
 
     super(scene, x, y, textureName);

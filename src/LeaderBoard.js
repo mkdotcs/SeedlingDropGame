@@ -91,7 +91,7 @@ export default class {
   addHighScore(highScore) {
     this.removeTimer();
     const { score: newScore, displayName: newDisplayName } = highScore;
-    const formattedScore = (`   ${newScore}`).slice(-6);
+    const formattedScore = (`   ${newScore.toFixed(2)}`).slice(-6);
     const text = this.scene.add.text(
       -this.width / 2 + 10, this.height,
       `${formattedScore} ${newDisplayName}`, {

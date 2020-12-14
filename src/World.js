@@ -60,7 +60,8 @@ export default class extends Phaser.Scene {
           dropX = target.body.right - ((target.body.right - dropLeft) / 2);
         }
         const seedlingX = dropX - target.x;
-        const score = ((1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100).toFixed(2);
+        const score = +((1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100)
+          .toFixed(2);
 
         drop.landed(true, dropX, () => {
           target.addSeedling(seedlingX, score, drop.displayName);
@@ -147,14 +148,12 @@ export default class extends Phaser.Scene {
 
   // eslint-disable-next-line class-methods-use-this
   async getProfileImageUrl(username) {
-    const url = `https://cors-anywhere.herokuapp.com/https://www.twitch.tv/${username}`;
-    const response = await fetch(url, {
-      'origin', 'x-requested-with',
-    });
-    const html = await response.text();
-    const $ = cheerio.load(html);
-    const result = $('.tw-avatar--size-64');
-    console.log(html);
-    console.log(result);
+    // const url = `https://cors-anywhere.herokuapp.com/https://www.twitch.tv/${username}`;
+    // const response = await fetch(url);
+    // const html = await response.text();
+    // const $ = cheerio.load(html);
+    // const result = $('.tw-avatar--size-64');
+    // console.log(html);
+    // console.log(result);
   }
 }
