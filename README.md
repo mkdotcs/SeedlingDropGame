@@ -2,7 +2,7 @@
 
   
 
-A drop game built with [Phaser 3](https://phaser.io/) that can be used as a twitch overlay, type commands in the chat to play.
+A drop game built with [Phaser 3](https://phaser.io/) that can be used as a twitch overlay, type commands in the chat to play.<br>
 *This game was inspired by [Coding Garden](https://www.twitch.tv/codinggarden) drop game, see the original code [here](https://github.com/CodingGarden/SeedlingDrop)*
 
 ## Build Setup
