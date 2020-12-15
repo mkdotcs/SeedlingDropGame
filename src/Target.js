@@ -28,7 +28,7 @@ export default class extends Phaser.GameObjects.Image {
     this.body.setImmovable(true)
       .setCollideWorldBounds(true);
 
-    this.displayWidth = scene.scale.width * 0.2;
+    this.displayWidth = scene.scale.width * 0.17;
     this.scaleY = this.scaleX;
     this.body.setSize(
       this.body.width - this.body.width * 0.1,
@@ -107,7 +107,7 @@ export default class extends Phaser.GameObjects.Image {
       targets: this,
       y,
       duration: 500,
-      onUpdate: () => { this.container.y = y - 10; },
+      onUpdate: () => { this.container.y = y + 5; },
       onComplete: () => {
         if (callback) {
           callback();
@@ -128,10 +128,11 @@ export default class extends Phaser.GameObjects.Image {
     }
 
     this.scene.tweens.add({
-      targets: [this, this.container],
+      targets: this,
       x,
       y,
       duration: animate ? 200 : 0,
+      onUpdate: () => { this.container.setPosition(x, y + 5); },
     });
 
     return { x, y };

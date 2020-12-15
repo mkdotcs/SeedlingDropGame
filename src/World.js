@@ -147,10 +147,20 @@ export default class extends Phaser.Scene {
   }
 
   // eslint-disable-next-line class-methods-use-this
+  // to authorize
+  //https://id.twitch.tv/oauth2/authorize?response_type=code&client_id=5ebo3rk4lhnm2tbqwb350j3lgd5p17&redirect_uri=http://localhost&scope=viewing_activity_read
+  // eslint-disable-next-line class-methods-use-this
   async getProfileImageUrl(username) {
-    // const url = `https://cors-anywhere.herokuapp.com/https://www.twitch.tv/${username}`;
-    // const response = await fetch(url);
-    // const html = await response.text();
+    const url = `https://api.twitch.tv/helix/users?login=${username}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: new Headers({
+        'Client-ID': '5ebo3rk4lhnm2tbqwb350j3lgd5p17',
+      }),
+    });
+    const json = await response.json();
+    const data = JSON.parse(json);
+    console.log(data);
     // const $ = cheerio.load(html);
     // const result = $('.tw-avatar--size-64');
     // console.log(html);
