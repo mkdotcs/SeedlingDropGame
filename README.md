@@ -2,7 +2,7 @@
 
   
 
-A drop game built with [Phaser 3](https://phaser.io/) that can be used as a twitch overlay, type commands in the chat to play.
+A drop game built with [Phaser 3](https://phaser.io/) that can be used as a twitch overlay, type commands in the chat to play.<br>
 *This game was inspired by [Coding Garden](https://www.twitch.tv/codinggarden) drop game, see the original code [here](https://github.com/CodingGarden/SeedlingDrop)*
 
 ## Build Setup
@@ -43,10 +43,10 @@ Customize the game by editing the configuration file `config/appConfig.js`
 
 #### For everyone including channel moderators 
 *Assuming that command prefix is the exclamation mark* <kbd>!</kbd>
-> !drop [Twitch emote](https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes)
-> !drop [BTTV emote](https://betterttv.com/emotes)
-> !drop [FFZ emote](https://www.frankerfacez.com/emoticons)
-> !drop [Emoji](https://en.wikipedia.org/wiki/Emoji)
+> !drop [Twitch emote](https://www.twitch.tv/creatorcamp/en/learn-the-basics/emotes)<br>
+> !drop [BTTV emote](https://betterttv.com/emotes)<br>
+> !drop [FFZ emote](https://www.frankerfacez.com/emoticons)<br>
+> !drop [Emoji](https://en.wikipedia.org/wiki/Emoji)<br>
 > !drop me
 
 #### For channel moderators
@@ -59,7 +59,7 @@ Customize the game by editing the configuration file `config/appConfig.js`
 
 
 ## TODO
-* [ ] Implement winter theme (christmas theme)
+* [ ] Implement a winter theme (christmas theme)
 
 ## Credits
 >Original SeedlingDrop game by [Coding Garden](https://www.twitch.tv/codinggarden). See the original code [here](https://github.com/CodingGarden/SeedlingDrop).
