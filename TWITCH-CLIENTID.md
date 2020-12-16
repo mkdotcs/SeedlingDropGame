@@ -8,20 +8,20 @@ The authorization process requires a Client ID, here is how you can get one.
 
 2. Click on the `Register Your Application` button.
 
-![Twitch Developer Console](twitch-console1.jpg)
+![Twitch Developer Console](doc-assets/twitch-console1.jpg)
 <br/>
 
 3. Fill in the fields and for ***OAuth Redirect URLs*** make sure that you enter exactly the same port as you specify in your `package.json`, then click on `Create` button.
 
-![Register Application](twitch-console2.jpg)
+![Register Application](doc-assets/twitch-console2.jpg)
 <br/>
 
 4. Click on `Manage` button.
 
-![Twitch Developer Console](twitch-console3.jpg)
+![Twitch Developer Console](doc-assets/twitch-console3.jpg)
 <br/>
 
 5. Get your Client ID.
 
-![Application Details](twitch-console4.jpg)
+![Application Details](doc-assets/twitch-console4.jpg)
 <br/>
