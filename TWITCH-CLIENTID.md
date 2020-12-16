@@ -8,21 +8,21 @@ The authorization process requires a Client ID, here is how you can get one.
 
 2. Click on the `Register Your Application` button.
 <br/>
-![alt text]([twitch-console1.jpg](https://github.com/MrBenCoder/SeedlingDropGame/blob/master/twitch-console1.jpg) "Twitch Developer Console")
+![alt text](twitch-console1.jpg) "Twitch Developer Console")
 <br/>
 
-3. Fill in the fields and for ***OAuth Redirect URLs*** make sure that you enter exactly the same port as you specify in your `package.json`, then click on `Create` button.
+1. Fill in the fields and for ***OAuth Redirect URLs*** make sure that you enter exactly the same port as you specify in your `package.json`, then click on `Create` button.
 <br/>
-![alt text]([twitch-console2.jpg](https://github.com/MrBenCoder/SeedlingDropGame/blob/master/twitch-console2.jpg) "Register Application")
+![alt text](twitch-console2.jpg) "Register Application")
 <br/>
 
 4. Click on `Manage` button.
 <br/>
-![alt text]([twitch-console3.jpg](https://github.com/MrBenCoder/SeedlingDropGame/blob/master/twitch-console3.jpg) "Twitch Developer Console")
+![alt text](twitch-console3.jpg) "Twitch Developer Console")
 <br/>
 
 5. Get your Client ID.
 <br/>
-![alt text](https://github.com/MrBenCoder/SeedlingDropGame/blob/master/twitch-console4.jpg "Application Details")
+![alt text](twitch-console4.jpg "Application Details")
 <br/>
 
