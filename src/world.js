@@ -15,8 +15,6 @@ export default class extends Phaser.Scene {
   }
 
   create() {
-    // this.getProfileImageUrl('mrbencoder');
-
     // setup game mode
     let mode;
     if (appConfig.testMode) {

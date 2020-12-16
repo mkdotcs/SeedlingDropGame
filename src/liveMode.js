@@ -57,7 +57,7 @@ export default class {
         switch (command) {
           case 'drop': {
             const lastDropTime = this.dropHistory[tags.username];
-            // if (lastDropTime && Date.now() - lastDropTime < dropDelay) return;
+            if (lastDropTime && Date.now() - lastDropTime < dropDelay) return;
 
             this.drop(tags, args);
             break;
@@ -106,6 +106,8 @@ export default class {
                   target.move(!targetConfig.move);
                 } else if (args[0] === 'float') {
                   target.float(!targetConfig.float);
+                } else if (args[0] === 'clear') {
+                  target.clear();
                 } else {
                   target.updateStatus(index);
                 }
@@ -121,7 +123,11 @@ export default class {
             if (args) {
               const index = options.indexOf(args[0]);
               if (index > -1) {
-                leaderBoard.updateStatus(index);
+                if (args[0] === 'clear') {
+                  leaderBoard.clear();
+                } else {
+                  leaderBoard.updateStatus(index);
+                }
               }
             }
             break;

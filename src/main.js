@@ -26,7 +26,7 @@ async function getTwitchAccessToken() {
 function newGame() {
   if (game || appConfig.accessToken) return;
 
-  if (twitchClientID) {
+  if (twitchClientID && !appConfig.testMode) {
     if (window.location.hostname !== 'id.twitch.tv') {
       getTwitchAccessToken();
     }

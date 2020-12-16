@@ -8,8 +8,8 @@ const globalCommands = {
 const modCommands = {
   'trail, tr': ['0', '1', '2', '3', '4', '5', '6', '7'],
   'laser, ls': ['bounce', 'destroy'],
-  'target, tg': ['show', 'auto', 'hide', 'move', 'float'],
-  'leaderboard, lb': ['show', 'auto', 'hide'],
+  'target, tg': ['show', 'auto', 'hide', 'move', 'float', 'clear'],
+  'leaderboard, lb': ['show', 'auto', 'hide', 'clear'],
   getOptions(searchKey) {
     if (searchKey in this) {
       return this[searchKey];

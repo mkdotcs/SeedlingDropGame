@@ -2,7 +2,7 @@
 
 export default {
   // Toggle between Test and Live mode
-  testMode: false,
+  testMode: true,
   // Laser collision effect => 0: bounce, 1: destroy
   laserCollision: 0,
   channel: {
@@ -15,7 +15,7 @@ export default {
     /* Used to authorize this app to use Twitch API
        Valid only if you want to enable the command (!drop me), if not keep it empty
        Please see the documentation on how to obtain Twitch Client ID */
-    twitchClientID: '5ebo3rk4lhnm2tbqwb350j3lgd5p17',
+    twitchClientID: '',
   },
   drop: {
     // 0.5: half size, 1: actual size, 2: double size, etc

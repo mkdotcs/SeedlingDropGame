@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { Random, MersenneTwister19937 } from 'random-js';
 
 import appConfig from './config/appConfig';
 
@@ -32,14 +33,11 @@ export default class extends Phaser.GameObjects.Sprite {
       this.scaleY = this.scaleX;
     }
 
-    // this.setPosition(Phaser.Math.Between(0, this.scene.scale.width), -100);
-    // this.setPosition(this.scene.scale.width / 2, -100);
-    this.setPosition(100 + Math.floor(Math.random() * (scene.scale.width - 2 * 100)), -100 - (Math.random() * 200));
+    const x = Math.floor(this.randFloat(0, 1) * Math.floor(this.scene.scale.width));
+    this.setPosition(x, -100);
     this.body.onWorldBounds = true;
     this.body
-      // .setVelocity((Math.random() * 4 + 2) * (Math.random() > 0.5 ? -1 : 1), Math.random() * 2 + 0.5)
-      .setVelocity(Phaser.Math.Between(-150, 150), Phaser.Math.Between(70, 250))
-      // .setVelocity(0, 300)
+      .setVelocity(Math.floor(this.randFloat(0, 1) * 500), this.randInt(70, 150))
       .setBounce(1)
       .setCollideWorldBounds(true);
 
@@ -48,8 +46,8 @@ export default class extends Phaser.GameObjects.Sprite {
     this.speed = 200;
 
     this.wobbleTween = scene.tweens.addCounter({
-      from: Phaser.Math.Between(-20, -30),
-      to: Phaser.Math.Between(20, 30),
+      from: Phaser.Math.Between(-15, -25),
+      to: Phaser.Math.Between(15, 25),
       duration: 800,
       repeat: -1,
       ease: Phaser.Math.Easing.Sine.InOut,
@@ -84,6 +82,18 @@ export default class extends Phaser.GameObjects.Sprite {
         follow: this,
       });
     }
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  randInt(from, to) {
+    const random = new Random(MersenneTwister19937.autoSeed());
+    return random.integer(from, to);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  randFloat(from, to) {
+    const random = new Random(MersenneTwister19937.autoSeed());
+    return random.real(from, to);
   }
 
   preUpdate(time, delta) {
