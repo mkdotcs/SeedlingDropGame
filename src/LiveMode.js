@@ -7,8 +7,9 @@ import appConfig from './config/appConfig';
 import { globalCommands, modCommands } from './common/constants';
 import Drop from './drop';
 
-const TWITCH_API = 'https://static-cdn.jtvnw.net/emoticons/v1/{id}/2.0';
-const BTTV_API = 'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/{id}/2x#emote';
+const TWITCH_USER_API = 'https://api.twitch.tv/helix/users?login=';
+const TWITCH_EMOTE_URL = 'https://static-cdn.jtvnw.net/emoticons/v1/{id}/2.0';
+const BTTV_URL = 'https://cors-anywhere.herokuapp.com/https://cdn.betterttv.net/emote/{id}/2x#emote';
 
 export default class {
   constructor(scene) {
@@ -42,7 +43,7 @@ export default class {
       twitchClient.on('message', (channel, tags, message, self) => {
         if (self || !message.startsWith(channelConfig.commandPrefix)) return;
 
-        const args = message.split(' ');
+        const args = message.toLowerCase().split(' ');
         const command = args[0].substring(1);
         args.shift();
 
@@ -55,11 +56,10 @@ export default class {
 
         switch (command) {
           case 'drop': {
-            const displayName = tags['display-name'] || tags.username;
-            const lastDropTime = this.dropHistory[displayName];
-            if (lastDropTime && Date.now() - lastDropTime < dropDelay) return;
+            const lastDropTime = this.dropHistory[tags.username];
+            // if (lastDropTime && Date.now() - lastDropTime < dropDelay) return;
 
-            this.drop(tags, args, displayName);
+            this.drop(tags, args);
             break;
 
           }
@@ -134,7 +134,9 @@ export default class {
     }
   }
 
-  async drop(tags, args, displayName) {
+  async drop(tags, args) {
+    const displayName = tags['display-name'] || tags.username;
+
     // Default drop config in case of invalid args
     let image = {
       id: 'defaultEmote',
@@ -149,16 +151,28 @@ export default class {
       // const id = emoteIds[Math.floor(Math.random() * emoteIds.length)];
       image = {
         id,
-        url: TWITCH_API.replace(/{id}/g, id),
+        url: TWITCH_EMOTE_URL.replace(/{id}/g, id),
         source: 'twitch',
       };
       // if there is an argument
     } else if (args) {
-      // Check for BTTV emotes
-      if (args[0] in this.bttvEmotes) {
+      if (args[0] === 'me') {
+        const { channel: { twitchClientID } } = appConfig;
+        if (twitchClientID) {
+          const profileImageUrl = await this.getProfileImageUrl(twitchClientID, tags.username);
+          if (profileImageUrl) {
+            image = {
+              id: tags.username,
+              url: profileImageUrl,
+              source: 'USERPROFILE',
+            };
+          }
+        }
+        // Check for BTTV emotes
+      } else if (args[0] in this.bttvEmotes) {
         image = {
           id: args[0],
-          url: BTTV_API.replace(/{id}/g, this.bttvEmotes[args[0]]),
+          url: BTTV_URL.replace(/{id}/g, this.bttvEmotes[args[0]]),
           source: 'BTTV',
         };
       // Check for FFZ emotes
@@ -203,6 +217,30 @@ export default class {
       });
       this.scene.load.start();
     });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async getProfileImageUrl(twitchClientID, username) {
+    const { accessToken } = appConfig;
+    if (accessToken) {
+      const url = `${TWITCH_USER_API}${username}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'client-id': twitchClientID,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const json = await response.json();
+        if (json.data[0]) {
+          const { profile_image_url: profileImageUrl } = json.data[0];
+          return profileImageUrl;
+        }
+      }
+    }
+    return '';
   }
 
   async getBttvEmotes() {
