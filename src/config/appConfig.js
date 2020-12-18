@@ -2,7 +2,7 @@
 
 export default {
   // Toggle between Test and Live mode
-  testMode: false,
+  testMode: true,
   // Laser collision effect => 0: bounce, 1: destroy
   laserCollision: 0,
   channel: {
