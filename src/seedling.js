@@ -25,7 +25,7 @@ export default class extends Phaser.GameObjects.Image {
     this.config = appConfig.drop;
     this.config.timout = this.config.timout || defaultConfig.timout;
 
-    // scene initialization
+    // initialization
     scene.add.existing(this);
 
     this.displayHeight = 0;
@@ -77,12 +77,8 @@ export default class extends Phaser.GameObjects.Image {
       },
     });
   }
+
+  destroy() {
+    this.displayName.destroy();
+  }
 }
-
-// Phaser.GameObjects.GameObjectFactory.register('seedling', function (x, y, score) {
-//   const seedling = new Seedling(this.scene, x, y, score);
-
-//   this.displayList.add(seedling);
-//   // this.updateList.add(seedling);
-//   return seedling;
-// });

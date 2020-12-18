@@ -154,7 +154,6 @@ export default class {
     if (tags.emotes) {
       const emoteIds = Object.keys(tags.emotes);
       const id = emoteIds[0];
-      // const id = emoteIds[Math.floor(Math.random() * emoteIds.length)];
       image = {
         id,
         url: TWITCH_EMOTE_URL.replace(/{id}/g, id),
@@ -210,7 +209,7 @@ export default class {
       await this.loadImage(imageId, image.url);
     }
 
-    this.dropHistory[displayName] = Date.now();
+    this.dropHistory[tags.username] = Date.now();
 
     const drop = new Drop(this.scene, imageId, displayName, appConfig.drop.trail);
   }
@@ -256,7 +255,7 @@ export default class {
     const { channelEmotes, sharedEmotes } = await bttvChannelResponse.json();
     emotes = emotes.concat(channelEmotes).concat(sharedEmotes);
     emotes.forEach(({ code, id }) => {
-      this.bttvEmotes[code] = id;
+      this.bttvEmotes[code.toLowerCase()] = id;
     });
   }
 
@@ -266,7 +265,7 @@ export default class {
     const { sets } = await ffzResponse.json();
     const { sets: channelSets } = await ffzChannelResponse.json();
     const appendEmotes = ({ name, urls }) => {
-      this.ffzEmotes[name] = `https:${Object.values(urls).pop()}`;
+      this.ffzEmotes[name.toLowerCase()] = `https:${Object.values(urls).pop()}`;
     };
     sets[3].emoticons.forEach(appendEmotes);
     channelSets[609613].emoticons.forEach(appendEmotes);

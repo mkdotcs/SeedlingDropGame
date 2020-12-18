@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { Random, MersenneTwister19937 } from 'random-js';
 
 import appConfig from './config/appConfig';
 
@@ -20,7 +19,7 @@ export default class extends Phaser.GameObjects.Sprite {
     this.config.hideTimeout = this.config.hideTimeout || defaultConfig.timeout;
     this.config.scale = this.config.scale || 1;
 
-    // scene initialization
+    // initialization
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
@@ -33,13 +32,18 @@ export default class extends Phaser.GameObjects.Sprite {
       this.scaleY = this.scaleX;
     }
 
-    const x = Math.floor(this.randFloat(0, 1) * Math.floor(this.scene.scale.width));
-    this.setPosition(x, -100);
+    const { width } = this.scene.scale;
+    const rnd = Phaser.Math.RND;
+    this.setPosition(Math.floor(rnd.frac() * width), -100);
     this.body.onWorldBounds = true;
+    const vx = rnd.frac() * (width / 2);
     this.body
-      .setVelocity(Math.floor(this.randFloat(0, 1) * 500), this.randInt(70, 150))
+      .setVelocity(Math.floor(rnd.frac() < 0.5 ? vx : -vx), rnd.between(70, 150))
       .setBounce(1)
       .setCollideWorldBounds(true);
+
+    /* for debug only */
+    // this.body.setVelocity(0, 300);
 
     this.setDepth(1);
 
@@ -64,7 +68,7 @@ export default class extends Phaser.GameObjects.Sprite {
         scale: { start: 1, end: 0 },
         alpha: { start: 0.3, end: 0 },
         frequency: 100,
-        lifespan: 1000,
+        lifespan: 500,
         follow: this,
       });
     } else if (selectedTrail > 2) {
@@ -72,7 +76,7 @@ export default class extends Phaser.GameObjects.Sprite {
         frame: selectedTrail === 3 ? colors : colors[selectedTrail - 4],
         speed: 50,
         lifespan: {
-          onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 1000,
+          onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300) * 500,
         },
         alpha: {
           onEmit: () => Phaser.Math.Percent(this.body.speed, 0, 300),
@@ -82,18 +86,6 @@ export default class extends Phaser.GameObjects.Sprite {
         follow: this,
       });
     }
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  randInt(from, to) {
-    const random = new Random(MersenneTwister19937.autoSeed());
-    return random.integer(from, to);
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  randFloat(from, to) {
-    const random = new Random(MersenneTwister19937.autoSeed());
-    return random.real(from, to);
   }
 
   preUpdate(time, delta) {

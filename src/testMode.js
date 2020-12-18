@@ -120,7 +120,7 @@ export default class {
       // Create a new random drop
       case Phaser.Input.Keyboard.KeyCodes.D:
         this.getRandomDrop();
-        target.updateStatus(targetConfig.status);
+        // target.updateStatus(targetConfig.status);
         break;
 
       // Fire laser

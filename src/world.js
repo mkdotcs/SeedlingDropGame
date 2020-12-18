@@ -40,10 +40,10 @@ export default class extends Phaser.Scene {
     });
 
     this.leaderBoard = new LeaderBoard(this);
-    this.target = new Target(this, 0, 0);
+    this.target = new Target(this);
 
     this.physics.add.collider(this.dropGroup);
-    this.physics.add.collider(this.target, this.dropGroup, (target, drop) => {
+    this.physics.add.collider(this.target.surface, this.dropGroup, (target, drop) => {
       if (target.body.touching.up) {
         const {
           left: dropLeft,
@@ -51,17 +51,23 @@ export default class extends Phaser.Scene {
         } = drop.getBounds();
         let dropX = drop.x;
 
-        if (drop.x < target.body.left) {
-          dropX = target.body.left + ((dropRight - target.body.left) / 2);
-        } else if (drop.x > target.body.right) {
-          dropX = target.body.right - ((target.body.right - dropLeft) / 2);
+        const {
+          left: targetLeft,
+          right: targetRight,
+          width: targetWidth,
+        } = target.body;
+
+        if (dropX < targetLeft) {
+          dropX = targetLeft + ((dropRight - targetLeft) / 2);
+        } else if (dropX > targetRight) {
+          dropX = targetRight - ((targetRight - dropLeft) / 2);
         }
-        const seedlingX = dropX - target.x;
-        const score = +((1 - Math.abs(seedlingX) / (this.target.displayWidth / 2)) * 100)
-          .toFixed(2);
+
+        const seedlingX = dropX - this.target.container.x;
+        const score = +((1 - Math.abs(seedlingX) / (targetWidth / 2)) * 100).toFixed(2);
 
         drop.landed(true, dropX, () => {
-          target.addSeedling(seedlingX, score, drop.displayName);
+          this.target.addSeedling(seedlingX, score, drop.displayName);
           this.leaderBoard.addHighScore({ score, displayName: drop.displayName });
         });
       }

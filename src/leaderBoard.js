@@ -22,7 +22,7 @@ export default class {
       ? this.config.status : defaultConfig.status;
     this.config.autoTimeout = this.config.autoTimeout || defaultConfig.autoTimeout;
 
-    // scene initialization
+    // initialization
     /** @type {Phaser.GameObjects.Container} container */
     this.container = scene.add.container(0, 0);
     this.leaderBoard = scene.add.image(0, 0, 'board');
@@ -84,7 +84,6 @@ export default class {
       duration: 600,
       delay: 300,
       ease: Phaser.Math.Easing.Back.Out,
-      // onComplete: () => { this.visible = !this.visible; },
     });
   }
 
